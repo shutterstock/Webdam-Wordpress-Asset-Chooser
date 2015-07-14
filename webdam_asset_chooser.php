@@ -38,7 +38,7 @@ class WebDAM_Asset_Chooser {
 	public static function _setup_plugin() {
 		add_filter('mce_external_plugins', array(__CLASS__, 'mce_external_plugins'));
 		add_filter('mce_buttons', array(__CLASS__, 'mce_add_button'));
-		
+
 		// Admin settings for plugin
 		add_action('admin_menu', array(__CLASS__, 'plugin_admin_add_page'));
 		add_action('admin_init', array(__CLASS__, 'plugin_admin_init'));
@@ -60,7 +60,7 @@ class WebDAM_Asset_Chooser {
 	}
 
 	/**
-	 *	Sets up the settings page for the WebDAM admin	
+	 *	Sets up the settings page for the WebDAM admin
 	 */
 	public static function plugin_admin_add_page() {
 		add_options_page('WebDAM Asset Chooser', 'WebDAM', 'manage_options', 'plugin', array(__CLASS__, 'plugin_options_page'));
@@ -77,10 +77,10 @@ class WebDAM_Asset_Chooser {
 		<form action="options.php" method="post">
 			<?php settings_fields('plugin_options'); ?>
 			<?php do_settings_sections('plugin'); ?>
-		 
+
 			<input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" />
 		</form></div>
-		 
+
 		<?php
 	}
 
@@ -99,8 +99,10 @@ class WebDAM_Asset_Chooser {
 	 */
 	function plugin_setting_string() {
 		$options = get_option('plugin_options');
-		echo "<input id='plugin_domain_path' name='plugin_options[domain_path]' size='40' type='text' value='{$options['domain_path']}' /><br />
-		<p class='description'>Your account URL, e.g. 'http://domain.webdamdb.com'</p>";
+?>
+		<input id="plugin_domain_path" name="plugin_domain_path" size="40" type="text" value="<?php echo esc_attr( $options['domain_path'] ); ?>" /><br />
+		<p class="description">Your account URL, e.g. 'http://domain.webdamdb.com'</p>
+<?php
 	}
 
 	/**
@@ -111,10 +113,8 @@ class WebDAM_Asset_Chooser {
 		$trimmed = trim($input['domain_path']);
 
 		// omit the last '/' if present
-		if (substr($trimmed, -1) == '/') {
-			$trimmed = substr($trimmed, 0, -1);
-		}
-		
+		$trimmed = untrailingslashit( $trimmed );
+
 		$options['domain_path'] = $trimmed;
 		return $options;
 	}
@@ -126,7 +126,7 @@ class WebDAM_Asset_Chooser {
 	 * @return array Array of TinyMCE plugins
 	 */
 	public static function mce_external_plugins( $plugin_array ) {
-		$plugin_array['webdam_asset_chooser'] = plugin_dir_url( __FILE__ ) . 'assets/assetchooser-loader.js';
+		$plugin_array['webdam_asset_chooser'] = plugins_url( 'assets/assetchooser-loader.js', __FILE__ );
 		return $plugin_array;
 	}
 
@@ -143,3 +143,5 @@ class WebDAM_Asset_Chooser {
 }
 
 WebDAM_Asset_Chooser::get_instance();
+
+//EOF
