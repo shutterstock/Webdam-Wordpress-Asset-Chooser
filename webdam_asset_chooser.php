@@ -3,12 +3,19 @@
  Plugin Name: WebDAM Asset Chooser
  Plugin URI: http://webdam.com/
  Description: Allows you to view and add assets from WebDAM to Wordpress.
- Version: 1.0
- Author: WebDAM
+ Version: 1.1
+ Author: WebDAM, PMC, Amit Gupta
  Author URI: http://webdam.com/
 */
 
 class WebDAM_Asset_Chooser {
+
+	const PLUGIN_ID = 'webdam-asset-chooser';
+
+	/**
+	 * @var WebDAM_Asset_Chooser Singleton instance of class
+	 */
+	private static $_instance;
 
 	/**
 	 * Handles initializing this class and returning the singleton instance after it's been cached.
@@ -16,45 +23,45 @@ class WebDAM_Asset_Chooser {
 	 * @return null|MCE_Table_Buttons
 	 */
 	public static function get_instance() {
-		// Store the instance locally to avoid private static replication
-		static $instance = null;
+		$class = get_called_class();
 
-		if ( null === $instance ) {
-			$instance = new self();
-			self::_setup_plugin();
+		if ( ! is_a( static::$_instance , 'WebDAM_Asset_Chooser' ) ) {
+			static::$_instance = new $class();
 		}
 
-		return $instance;
+		return static::$_instance;
 	}
 
 	/**
 	 * An empty constructor
 	 */
-	public function __construct() { /* Purposely do nothing here */ }
+	protected function __construct() {
+		$this->_setup_plugin();
+	}
 
 	/**
 	 * Handles registering hooks that initialize this plugin.
 	 */
-	public static function _setup_plugin() {
-		add_filter('mce_external_plugins', array(__CLASS__, 'mce_external_plugins'));
-		add_filter('mce_buttons', array(__CLASS__, 'mce_add_button'));
+	protected function _setup_plugin() {
+		add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
+		add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
 
 		// Admin settings for plugin
-		add_action('admin_menu', array(__CLASS__, 'plugin_admin_add_page'));
-		add_action('admin_init', array(__CLASS__, 'plugin_admin_init'));
+		add_action( 'admin_menu', array( $this, 'plugin_admin_add_page' ) );
+		add_action( 'admin_init', array( $this, 'plugin_admin_init' ) );
 
 		// Load admin variable for the domain in the plugin
-		add_action('admin_enqueue_scripts', array(__CLASS__, 'plugin_load_plugin_vars'));
+		add_action( 'admin_enqueue_scripts', array( $this, 'plugin_load_plugin_vars' ) );
 	}
 
 	/**
 	 *	Enqueues the JS which loads the domain name
 	 */
-	public static function plugin_load_plugin_vars() {
-		$options = get_option('plugin_options');
+	public function plugin_load_plugin_vars() {
+		$domain_path = get_option( self::PLUGIN_ID . '-domain_path' );
 		?>
 		<script type="text/javascript">
-		var asset_chooser_domain = <?= json_encode( $options['domain_path'] ); ?>;
+		var asset_chooser_domain = '<?php echo esc_js( $domain_path ); ?>';
 		</script>
 		<?php
 	}
@@ -62,21 +69,21 @@ class WebDAM_Asset_Chooser {
 	/**
 	 *	Sets up the settings page for the WebDAM admin
 	 */
-	public static function plugin_admin_add_page() {
-		add_options_page('WebDAM Asset Chooser', 'WebDAM', 'manage_options', 'plugin', array(__CLASS__, 'plugin_options_page'));
+	public function plugin_admin_add_page() {
+		add_options_page( 'WebDAM Asset Chooser', 'WebDAM', 'manage_options', self::PLUGIN_ID . '-plugin', array( $this, 'plugin_options_page' ) );
 	}
 
 	/**
 	 *	Markup for the settings page
 	 */
-	public static function plugin_options_page() {
+	public function plugin_options_page() {
 		?>
 		<div class="wrap">
 		<h2>WebDAM Asset Chooser Settings</h2>
 		This page allows you to set up your WebDAM Asset Chooser.
 		<form action="options.php" method="post">
-			<?php settings_fields('plugin_options'); ?>
-			<?php do_settings_sections('plugin'); ?>
+			<?php settings_fields( self::PLUGIN_ID . '-domain_path' ); ?>
+			<?php do_settings_sections( self::PLUGIN_ID . '-plugin' ); ?>
 
 			<input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" />
 		</form></div>
@@ -87,20 +94,20 @@ class WebDAM_Asset_Chooser {
 	/**
 	 *	Initializes the WebDAM admin section
 	 */
-	public static function plugin_admin_init() {
-		register_setting('plugin_options', 'plugin_options', array(__CLASS__, 'plugin_options_validate' ));
-		add_settings_section('plugin_main', '', '', 'plugin');
-		add_settings_field('plugin_domain_path', 'Your WebDAM Account', array(__CLASS__, 'plugin_setting_string'), 'plugin', 'plugin_main');
+	public function plugin_admin_init() {
+		register_setting( self::PLUGIN_ID . '-domain_path', self::PLUGIN_ID . '-domain_path', array( $this, 'plugin_options_validate' ) );
+		add_settings_section( self::PLUGIN_ID . '-plugin_main', '', '', self::PLUGIN_ID . '-plugin' );
+		add_settings_field( self::PLUGIN_ID . '-plugin_domain_path', 'Your WebDAM Account', array( $this, 'plugin_setting_string' ), self::PLUGIN_ID . '-plugin', self::PLUGIN_ID . '-plugin_main' );
 	}
 
 
 	/**
 	 *	Displays the string which represents the WebDAM domain
 	 */
-	function plugin_setting_string() {
-		$options = get_option('plugin_options');
+	public function plugin_setting_string() {
+		$domain_path = get_option( self::PLUGIN_ID . '-domain_path' );
 ?>
-		<input id="plugin_domain_path" name="plugin_domain_path" size="40" type="text" value="<?php echo esc_attr( $options['domain_path'] ); ?>" /><br />
+		<input id="<?php echo esc_attr( self::PLUGIN_ID . '-domain_path' ); ?>" name="<?php echo esc_attr( self::PLUGIN_ID . '-domain_path' ); ?>" size="40" type="text" value="<?php echo esc_attr( $domain_path ); ?>" />
 		<p class="description">Your account URL, e.g. 'http://domain.webdamdb.com'</p>
 <?php
 	}
@@ -108,15 +115,21 @@ class WebDAM_Asset_Chooser {
 	/**
 	 *	Simple validation for the domain, can be enhanced
 	 */
-	public static function plugin_options_validate($input) {
-		$options = get_option('plugin_options');
-		$trimmed = trim($input['domain_path']);
+	public function plugin_options_validate( $domain_path ) {
 
-		// omit the last '/' if present
-		$trimmed = untrailingslashit( $trimmed );
+		if ( empty( $domain_path ) || ! is_string( $domain_path ) || filter_var( trim( $domain_path ), FILTER_VALIDATE_URL ) === false ) {
+			//not a valid domain URL, bail out
+			return '';
+		}
 
-		$options['domain_path'] = $trimmed;
-		return $options;
+		$url_parts = parse_url( trim( $domain_path ) );
+
+		if ( ! is_array( $url_parts ) || empty( $url_parts ) || empty( $url_parts['scheme'] ) || empty( $url_parts['host'] ) ) {
+			return '';
+		}
+
+		return sprintf( '%s://%s', $url_parts['scheme'], $url_parts['host'] );
+
 	}
 
 	/**
@@ -125,7 +138,7 @@ class WebDAM_Asset_Chooser {
 	 * @param array $plugin_array Array of TinyMCE plugins
 	 * @return array Array of TinyMCE plugins
 	 */
-	public static function mce_external_plugins( $plugin_array ) {
+	public function mce_external_plugins( $plugin_array ) {
 		$plugin_array['webdam_asset_chooser'] = plugins_url( 'assets/assetchooser-loader.js', __FILE__ );
 		return $plugin_array;
 	}
@@ -136,7 +149,7 @@ class WebDAM_Asset_Chooser {
 	 * @param array $buttons Buttons for the second row
 	 * @return array Buttons for the second row
 	 */
-	public static function mce_add_button( $buttons ) {
+	public function mce_add_button( $buttons ) {
 		array_push( $buttons, "separator", 'btnWebDAMAssetChooser' );
         return $buttons;
 	}
