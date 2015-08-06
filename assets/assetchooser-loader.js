@@ -13,15 +13,15 @@
 			ed.addCommand('showAssetChooser', function() {
 				var params = [{label:"Embed the link", action:"getAssetId", showEmbedLink:"true", showAddLink:"false", sessionMode:"session"}];
 				var returnPath = mainUrl + '/setvariable.html';
-				
+
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
-					url: asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(returnPath) + 
+					url: asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(returnPath) +
 						'&params=' + encodeURIComponent(JSON.stringify(params)),
 					width: 940,
 					height: 600,
 					onclose: function() {
-						
+
 					}
 				});
 
@@ -31,12 +31,12 @@
 					var re = new RegExp("widgetEmbedValue=([^;]+)");
 					var value = re.exec(document.cookie);
 					var currentCookieValue = (value != null) ? unescape(value[1]) : null;
-					
+
 					if (currentCookieValue != '' && currentCookieValue != null) {
 						// clear the cookie value
 						document.cookie = "widgetEmbedValue=;path=/;";
 						clearInterval(mainInterval);
-						
+
 						var returnedImage = JSON.parse(currentCookieValue);
 						if (returnedImage.embedType != 'dismiss') {
 							console.log('Reading cookie value');
@@ -45,17 +45,20 @@
 								windowReference.close();
 							} else {
 								var textLink = prompt('Please enter the label of your link', returnedImage.filename);
-								ed.execCommand('mceInsertContent', 0, '<a href="' + webDAMHTMLPath + '/download.php?id=' + returnedImage.id + '">' + textLink + '</a>');
+
+								var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + returnedImage.id ).html( textLink );
+
+								ed.execCommand('mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ));
 								windowReference.close();
 							}
 						}
-						
+
 						currentCookieValue = null;
 					}
 				}, 500);
 			});
 		},
-		
+
 		getInfo: function() {
 			return {
 				longname: "WebDAM Asset Chooser",
