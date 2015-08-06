@@ -40,18 +40,57 @@ class WebDAM_Asset_Chooser {
 	}
 
 	/**
+	 * Check whether is it ok to load up plugin functionality or not.
+	 *
+	 * @return boolean Returns TRUE if its ok to load up plugin functionality else FALSE
+	 */
+	protected function _is_ok_to_load() {
+		if ( get_option( self::PLUGIN_ID . '-domain_path', false ) !== false ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Handles registering hooks that initialize this plugin.
 	 */
 	protected function _setup_plugin() {
-		add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
-		add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
+		add_action( 'admin_init', array( $this, 'plugin_admin_init' ) );
 
 		// Admin settings for plugin
 		add_action( 'admin_menu', array( $this, 'plugin_admin_add_page' ) );
-		add_action( 'admin_init', array( $this, 'plugin_admin_init' ) );
 
-		// Load admin variable for the domain in the plugin
-		add_action( 'admin_enqueue_scripts', array( $this, 'plugin_load_plugin_vars' ) );
+		//load up plugin functionality only if domain path is saved in options
+		if ( $this->_is_ok_to_load() ) {
+
+			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
+			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
+
+			// Load admin variable for the domain in the plugin
+			add_action( 'admin_enqueue_scripts', array( $this, 'plugin_load_plugin_vars' ) );
+
+		} else {
+			//domain path not saved in plugin options, show an admin notice
+			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
+		}
+	}
+
+	/**
+	 * Show a notice to admin users to update plugin options
+	 *
+	 * @return void
+	 */
+	public function show_admin_notice() {
+		/*
+		 * We want to show notice only to those users who can update options,
+		 * for everyone else the notice won't mean much if anything.
+		 */
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		printf( '<div class="error"><p><strong>Please update <a href="%s">WebDAM options</a> with your account URL.</strong></p></div>', admin_url( 'options-general.php?page=' . self::PLUGIN_ID . '-plugin' ) );
 	}
 
 	/**
