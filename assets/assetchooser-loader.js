@@ -46,7 +46,7 @@
 							} else {
 								var textLink = prompt('Please enter the label of your link', returnedImage.filename);
 
-								var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + returnedImage.id ).text( textLink );
+								var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + returnedImage.id ).html( textLink );
 
 								ed.execCommand('mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ));
 								windowReference.close();
