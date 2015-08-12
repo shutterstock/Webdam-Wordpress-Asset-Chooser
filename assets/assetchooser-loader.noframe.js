@@ -29,13 +29,15 @@
 						var returnedImage = JSON.parse(currentCookieValue);
 						if (returnedImage.embedType != 'dismiss') {
 							if (returnedImage.embedType == 'preview') {
-								ed.execCommand('mceInsertContent', 0, '<img src="' + returnedImage.url + '" alt="' + returnedImage.filename + '" />');
+								var elem_img = jQuery( '<img>' ).attr( 'src', returnedImage.url ).attr( 'alt', returnedImage.filename );
+
+								ed.execCommand( 'mceInsertContent', 0, elem_img.prop( 'outerHTML' ) );
 							} else {
 								var textLink = prompt('Please enter the label of your link', returnedImage.filename);
 
 								var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + returnedImage.id ).text( textLink );
 
-								ed.execCommand('mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ));
+								ed.execCommand( 'mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ) );
 							}
 						}
 
