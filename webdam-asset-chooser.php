@@ -90,7 +90,7 @@ class WebDAM_Asset_Chooser {
 			return;
 		}
 
-		printf( '<div class="error"><p><strong>Please update <a href="%s">WebDAM options</a> with your account URL.</strong></p></div>', admin_url( 'options-general.php?page=' . self::PLUGIN_ID . '-plugin' ) );
+		printf( '<div class="error"><p><strong>Please update <a href="%s">WebDAM options</a> with your account URL.</strong></p></div>', esc_url( admin_url( 'options-general.php?page=' . self::PLUGIN_ID . '-plugin' ) ) );
 	}
 
 	/**
