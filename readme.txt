@@ -1,10 +1,8 @@
 === Advanced Custom Fields: Gallery Field ===
-Author: WebDAM
-Author URI: http://www.webdam.com
-Plugin URI: http://www.webdam.com
+Contributors: WebDAM, amit, pmcdotcom
 Requires at least: 3.5
-Tested up to: 4.1
-Version: 1.0
+Tested up to: 4.3
+Version: 1.1
 
 
 == Copyright ==
