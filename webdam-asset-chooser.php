@@ -97,6 +97,13 @@ class WebDAM_Asset_Chooser {
 	 *	Enqueues the JS which loads the domain name
 	 */
 	public function plugin_load_plugin_vars() {
+		$screen = get_current_screen();
+
+		// Only output the following <script> on edit/new post screens
+		if ( 'post' !== $screen->base ) {
+			return;
+		}
+
 		$domain_path = get_option( self::PLUGIN_ID . '-domain_path' );
 		?>
 		<script type="text/javascript">
