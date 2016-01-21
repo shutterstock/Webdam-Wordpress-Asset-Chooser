@@ -74,6 +74,9 @@ class WebDAM_Asset_Chooser {
 			//domain path not saved in plugin options, show an admin notice
 			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
 		}
+
+		// Handle sideloading images from WebDAM
+		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 	}
 
 	/**
@@ -97,6 +100,9 @@ class WebDAM_Asset_Chooser {
 	 *	Enqueues the JS which loads the domain name
 	 */
 	public function plugin_load_plugin_vars() {
+
+		global $post;
+
 		$screen = get_current_screen();
 
 		// Only output the following <script> on edit/new post screens
@@ -107,7 +113,9 @@ class WebDAM_Asset_Chooser {
 		$domain_path = get_option( self::PLUGIN_ID . '-domain_path' );
 		?>
 		<script type="text/javascript">
-		var asset_chooser_domain = '<?php echo esc_js( $domain_path ); ?>';
+			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
+			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
+			var asset_chooser_domain = <?php echo wp_json_encode( $domain_path ); ?>;
 		</script>
 		<?php
 	}
@@ -198,6 +206,52 @@ class WebDAM_Asset_Chooser {
 	public function mce_add_button( $buttons ) {
 		array_push( $buttons, "separator", 'btnWebDAMAssetChooser' );
         return $buttons;
+	}
+
+	/**
+	 * Sideload the remote WebDAMN image into WP's media library
+	 *
+	 * This is executed over AJAX from client-side when an image is chosen
+	 * in the WebDAM interface.
+	 */
+	public function handle_ajax_image_sideload() {
+
+		// Verify doing ajax
+		if ( ! defined( 'DOING_AJAX' ) && ! DOING_AJAX ) {
+			return;
+		}
+
+		// Verify our nonce to ensure safe origin
+		check_ajax_referer( 'webdam_sideload_image', 'nonce' );
+
+		// Verify we've got the data we need to proceed
+		if ( empty( $_POST['post_id'] ) ) {
+			wp_send_json_error( array( 'No post ID provided.' ) );
+		}
+
+		if ( empty( $_POST['remote_image_url'] ) ) {
+			wp_send_json_error( array( 'No image source provided.' ) );
+		}
+
+		// Sanitize our input
+		$post_id          = (int) $_POST['post_id'];
+		$remote_image_url = esc_url_raw( $_POST['remote_image_url'] );
+		$remote_image_filename = sanitize_file_name( $_POST['remote_image_filename'] );
+
+		// Sideload the image into WP
+		$local_image_url  = media_sideload_image( $remote_image_url, $post_id, '', 'src' );
+
+		// Return the local image url on success
+		// ..error message on failure
+		if ( is_wp_error( $local_image_url ) ) {
+
+			wp_send_json_error( array( 'Unable to sideload image.' ) );
+
+		} else {
+
+			wp_send_json_success( array( 'url' => $local_image_url, 'filename' => $remote_image_filename ) );
+
+		}
 	}
 }
 

@@ -1,4 +1,5 @@
-(function() {
+/* global ajaxurl, post_id, webdam_sideload_nonce */
+( function( $ ) {
 	tinymce.create('tinymce.plugins.WebDAMAssetChooser', {
 		init: function(ed, mainUrl) {
 			ed.addButton('btnWebDAMAssetChooser',
@@ -39,18 +40,40 @@
 
 						var returnedImage = JSON.parse(currentCookieValue);
 						if (returnedImage.embedType != 'dismiss') {
-							console.log('Reading cookie value');
 							if (returnedImage.embedType == 'preview') {
-								var elem_img = jQuery( '<img>' ).attr( 'src', returnedImage.url ).attr( 'alt', returnedImage.filename );
 
-								ed.execCommand( 'mceInsertContent', 0, elem_img.prop( 'outerHTML' ) );
-								windowReference.close();
+								// POST the image URL to the server via AJAX
+								// Server side—sideload the image into our media library
+								// embed the copied version of the image (from our ML)
+								$.post(
+									ajaxurl,
+									{
+										action: 'pmc-webdam-sideload-image',
+										nonce: webdam_sideload_nonce,
+										post_id: post_id,
+										remote_image_url: returnedImage.url,
+										remote_image_filename: returnedImage.filename
+									},
+									function( response ) {
+
+										if ( response.success ) {
+
+											var elem_img = jQuery( '<img>' ).attr( 'src', response.data.url ).attr( 'alt', response.data.filename );
+
+											ed.execCommand( 'mceInsertContent', 0, elem_img.prop( 'outerHTML' ) );
+
+										}
+										// Close the WebDAM modal window
+										windowReference.close();
+									}
+								);
 							} else {
 								var textLink = prompt('Please enter the label of your link', returnedImage.filename);
 
 								var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + returnedImage.id ).text( textLink );
 
 								ed.execCommand( 'mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ) );
+								// Close the WebDAM modal window
 								windowReference.close();
 							}
 						}
@@ -73,4 +96,4 @@
 	});
 	// Register plugin
 	tinymce.PluginManager.add('webdam_asset_chooser', tinymce.plugins.WebDAMAssetChooser);
-})();
+} )( jQuery );
