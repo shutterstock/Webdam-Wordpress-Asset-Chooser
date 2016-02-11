@@ -240,6 +240,11 @@ class WebDAM_Asset_Chooser {
 
 		// Adjust the remote image url so we receive the largest image possible
 		$remote_image_url = str_replace( 'md_', '1280_', $remote_image_url );
+
+		// Determine the filename w/o it's extension
+		// We'll use this below as a helper for obtaining image metadata
+		$remove_image_filename_wo_ext = pathinfo( $remote_image_filename, PATHINFO_FILENAME );
+
 		// Hook into add_attachment so we can obtain the sideloaded image ID
 		// media_sideload_image does not return the ID, which sucks.
 		add_action( 'add_attachment', array( $this, 'add_attachment' ), 10, 1 );
@@ -258,6 +263,35 @@ class WebDAM_Asset_Chooser {
 		// We'll need to fetch additional data if what we've already received
 		// isn't sufficient.
 		$webdam_image_meta_data = wp_get_attachment_metadata( $webdam_attachment_id );
+
+		// Set attachment title with metadata
+
+		$no_title = $no_caption = $no_credit = $no_copyright = false;
+
+		// Check if we're missing metadata
+		// For now we're simply checking if there is
+		// a title, caption, and copyright
+
+		/*
+		 * we can find a better way to accomplish the following..
+		 *
+		if ( empty( $webdam_image_meta_data['image_meta']['title'] ) || $remove_image_filename_wo_ext === $webdam_image_meta_data['image_meta']['title'] ) {
+			$no_title = true;
+		}
+
+		if ( empty( $webdam_image_meta_data['image_meta']['caption'] ) ) {
+			$no_caption = true;
+		}
+
+		if ( empty( $webdam_image_meta_data['image_meta']['copyright'] ) ) {
+			$no_copyright = true;
+		}
+
+		if ( empty( $webdam_image_meta_data['image_meta']['credit'] ) ) {
+			$no_credit = true;
+		}
+		*/
+
 		// Return the local image url on success
 		// ..error message on failure
 		if ( is_wp_error( $local_image_url ) ) {
