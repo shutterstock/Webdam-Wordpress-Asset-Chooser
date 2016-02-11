@@ -240,9 +240,24 @@ class WebDAM_Asset_Chooser {
 
 		// Adjust the remote image url so we receive the largest image possible
 		$remote_image_url = str_replace( 'md_', '1280_', $remote_image_url );
+		// Hook into add_attachment so we can obtain the sideloaded image ID
+		// media_sideload_image does not return the ID, which sucks.
+		add_action( 'add_attachment', array( $this, 'add_attachment' ), 10, 1 );
+
 		// Sideload the image into WP
 		$local_image_url  = media_sideload_image( $remote_image_url, $post_id, '', 'src' );
 
+		// Grab the sideloaded image ID we just set via the
+		// add_attachment actionm hook
+		$webdam_attachment_id = get_post_meta( $post_id, 'webdam_attachment_id_tmp', true );
+
+		// We don't need this any longer—let's ditch it.
+		delete_post_meta( $post_id, 'webdam_attachment_id_tmp' );
+
+		// Grab the new attachment's metadata so we can see what's in there
+		// We'll need to fetch additional data if what we've already received
+		// isn't sufficient.
+		$webdam_image_meta_data = wp_get_attachment_metadata( $webdam_attachment_id );
 		// Return the local image url on success
 		// ..error message on failure
 		if ( is_wp_error( $local_image_url ) ) {
@@ -254,6 +269,42 @@ class WebDAM_Asset_Chooser {
 			wp_send_json_success( array( 'url' => $local_image_url, 'filename' => $remote_image_filename ) );
 
 		}
+	}
+
+	/**
+	 * Helper to obtain sideloaded image ID
+	 *
+	 * We add this hook before calling media_sideload_image,
+	 * and remove it immediately afterwards. This allows us to
+	 * capture the newly sideloaded attachment ID. In this context
+	 * we can obtain the post_parent and use that to set post meta
+	 * on the parent post, which contains the attachment ID.
+	 *
+	 * It's a little hacky, but by doing so we can call get_post_meta
+	 * after calling media_sideload_image to obtain the new attachment ID
+	 *
+	 * @internal Called via add_attachment action hook
+	 *
+	 * @param $attachment_id The ID of the newly inserted attachment image
+	 *
+	 * @return null
+	 */
+	public function add_attachment( $attachment_id ) {
+
+		// Remove this hook callback so it doesn't fire again
+		// We only want this to fire once, right when we're sideloading
+		// the image into WP.
+		remove_action( 'add_attachment', array( $this, 'add_attachment' ), 10, 1 );
+
+		// Fetch the attachment's post so we may obtain it's parent ID
+		// When we call media_sideload_image we specify the original post's ID
+		// so that the attachment will be attached to the post.
+		$attachment = get_post( $attachment_id );
+
+		// Set temporary post meta on the parent post so we may obtain the
+		// attachment id via get_post_meta immediately after calling
+		// media_sideload_image()
+		add_post_meta( $attachment->post_parent, 'webdam_attachment_id_tmp', $attachment_id );
 	}
 }
 
