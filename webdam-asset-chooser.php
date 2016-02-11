@@ -238,6 +238,8 @@ class WebDAM_Asset_Chooser {
 		$remote_image_url = esc_url_raw( $_POST['remote_image_url'] );
 		$remote_image_filename = sanitize_file_name( $_POST['remote_image_filename'] );
 
+		// Adjust the remote image url so we receive the largest image possible
+		$remote_image_url = str_replace( 'md_', '1280_', $remote_image_url );
 		// Sideload the image into WP
 		$local_image_url  = media_sideload_image( $remote_image_url, $post_id, '', 'src' );
 
