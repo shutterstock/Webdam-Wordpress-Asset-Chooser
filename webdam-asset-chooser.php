@@ -57,6 +57,7 @@ class WebDAM_Asset_Chooser {
 	 */
 	protected function _setup_plugin() {
 		add_action( 'admin_init', array( $this, 'plugin_admin_init' ) );
+		add_action( 'admin_init', array( $this, 'cache_webdam_api' ), 10, 0 );
 
 		// Admin settings for plugin
 		add_action( 'admin_menu', array( $this, 'plugin_admin_add_page' ) );
@@ -293,6 +294,8 @@ class WebDAM_Asset_Chooser {
 		}
 		*/
 
+		$webdam_image_meta = $this->get_webdam_image_metadata( $remote_image_id );
+
 		// Return the local image url on success
 		// ..error message on failure
 		if ( is_wp_error( $local_image_url ) ) {
@@ -303,6 +306,74 @@ class WebDAM_Asset_Chooser {
 
 			wp_send_json_success( array( 'url' => $local_image_url, 'filename' => $remote_image_filename ) );
 
+		}
+	}
+
+	/**
+	 * @param bool $refresh_cache
+	 */
+	public function cache_webdam_api( $refresh_cache = true ) {
+
+		require __DIR__ . '/vendor/shutterstock/presto.php';
+		require __DIR__ . '/vendor/webdam-php-wrapper/response.php';
+		require __DIR__ . '/vendor/webdam-php-wrapper/api-client.php';
+
+		$client_id = "b632bb166bf7bdc2370e363d0eb87e70cee3bc2b";
+		$client_secret = "3fa40ec908a73b89192ab8f1c5d866ebdb025bf2";
+		$username = "wwd-user";
+		$password = "SUmGOhy27QaINXRL7ecDdw==";
+
+		// Create instance of REST client
+		$presto = new Presto\Presto( array( CURLOPT_VERBOSE => true ) );
+		$response = new bbaisley\Response();
+
+		$api = wp_cache_get( 'webdam_api_instance' );
+
+		if ( false === $api || $refresh_cache ) {
+
+			$api = new bbaisley\Api( $client_id, $client_secret, $presto, $response );
+
+			$access_token_response = $api->getAccessTokenUsingPassword( $username, $password );
+
+			if ( 200 === $access_token_response->meta['http_code'] ) {
+
+				wp_cache_set( 'webdam_api_instance', $api );
+			}
+		}
+	}
+
+	/**
+	 * @return bool|mixed
+	 */
+	public function get_webdam_api() {
+
+		$api = wp_cache_get( 'webdam_api_instance' );
+
+		if ( $api->isAccessTokenExpired() ) {
+			$api->refreshAccess();
+		}
+
+		return $api;
+	}
+
+	/**
+	 * @param array $image_ids
+	 *
+	 * @return bool
+	 */
+	public function get_webdam_image_metadata( $image_ids = array() ) {
+
+		$image_ids = (array) $image_ids;
+
+		$webdam_api = $this->get_webdam_api();
+
+		$image_meta = $webdam_api->getAssetMetadata( $image_ids );
+
+		if ( 200 === $image_meta->meta['http_code'] ) {
+
+			return $image_meta->data;
+		} else {
+			return false;
 		}
 	}
 
