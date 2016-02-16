@@ -235,6 +235,7 @@ class WebDAM_Asset_Chooser {
 
 		// Sanitize our input
 		$post_id          = (int) $_POST['post_id'];
+		$remote_image_id  = (int) $_POST['remote_image_id'];
 		$remote_image_url = esc_url_raw( $_POST['remote_image_url'] );
 		$remote_image_filename = sanitize_file_name( $_POST['remote_image_filename'] );
 

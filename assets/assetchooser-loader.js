@@ -51,6 +51,7 @@
 										action: 'pmc-webdam-sideload-image',
 										nonce: webdam_sideload_nonce,
 										post_id: post_id,
+										remote_image_id: returnedImage.id,
 										remote_image_url: returnedImage.url,
 										remote_image_filename: returnedImage.filename
 									},
