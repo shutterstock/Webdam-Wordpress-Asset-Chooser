@@ -169,9 +169,9 @@ class Api {
 	 */
 	public function isAccessTokenExpired() {
 		if ($this->access_expires < time()) {
-			return false;
-		} else {
 			return true;
+		} else {
+			return false;
 		}
 	}
 
