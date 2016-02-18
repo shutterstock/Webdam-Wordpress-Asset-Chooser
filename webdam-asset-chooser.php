@@ -308,7 +308,7 @@ class WebDAM_Asset_Chooser {
 	/**
 	 * @param bool $refresh_cache
 	 */
-	public function cache_webdam_api( $refresh_cache = true ) {
+	public function cache_webdam_api( $refresh_cache = false ) {
 
 		require __DIR__ . '/vendor/shutterstock/presto.php';
 		require __DIR__ . '/vendor/webdam-php-wrapper/response.php';
