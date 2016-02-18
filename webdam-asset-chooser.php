@@ -353,23 +353,28 @@ class WebDAM_Asset_Chooser {
 	}
 
 	/**
-	 * @param array $image_ids
+	 * Fetch asset metadata from WebDAM
 	 *
-	 * @return bool
+	 * @param array $asset_ids
+	 *
+	 * @return array|bool Array of metadata on success, false on failure
 	 */
-	public function get_webdam_image_metadata( $image_ids = array() ) {
+	public function get_webdam_asset_metadata( $asset_ids = array() ) {
 
-		$image_ids = (array) $image_ids;
+		$asset_ids = (array) $asset_ids;
 
 		$webdam_api = $this->get_webdam_api();
 
-		$image_meta = $webdam_api->getAssetMetadata( $image_ids );
+		$asset_meta = $webdam_api->getAssetMetadata( $asset_ids );
 
-		if ( 200 === $image_meta->meta['http_code'] ) {
+		if ( 200 === $asset_meta->meta['http_code'] ) {
 
-			return $image_meta->data;
+			return $asset_meta->data;
+
 		} else {
+
 			return false;
+
 		}
 	}
 
