@@ -230,29 +230,28 @@ class WebDAM_Asset_Chooser {
 			wp_send_json_error( array( 'No post ID provided.' ) );
 		}
 
-		if ( empty( $_POST['remote_image_url'] ) ) {
+		if ( empty( $_POST['webdam_asset_url'] ) ) {
 			wp_send_json_error( array( 'No image source provided.' ) );
 		}
 
 		// Sanitize our input
 		$post_id          = (int) $_POST['post_id'];
-		$remote_image_id  = (int) $_POST['remote_image_id'];
-		$remote_image_url = esc_url_raw( $_POST['remote_image_url'] );
-		$remote_image_filename = sanitize_file_name( $_POST['remote_image_filename'] );
+		$webdam_asset_id  = (int) $_POST['webdam_asset_id'];
+		$webdam_asset_url = esc_url_raw( $_POST['webdam_asset_url'] );
+		$webdam_asset_filename = sanitize_file_name( $_POST['webdam_asset_filename'] );
 
 		// Adjust the remote image url so we receive the largest image possible
-		$remote_image_url = str_replace( 'md_', '1280_', $remote_image_url );
-
 		// Determine the filename w/o it's extension
 		// We'll use this below as a helper for obtaining image metadata
 		$remove_image_filename_wo_ext = pathinfo( $remote_image_filename, PATHINFO_FILENAME );
+		$webdam_asset_url = str_replace( 'md_', '1280_', $webdam_asset_url );
 
 		// Hook into add_attachment so we can obtain the sideloaded image ID
 		// media_sideload_image does not return the ID, which sucks.
 		add_action( 'add_attachment', array( $this, 'add_attachment' ), 10, 1 );
 
 		// Sideload the image into WP
-		$local_image_url  = media_sideload_image( $remote_image_url, $post_id, '', 'src' );
+		$local_image_url  = media_sideload_image( $webdam_asset_url, $post_id, '', 'src' );
 
 		// Grab the sideloaded image ID we just set via the
 		// add_attachment actionm hook
