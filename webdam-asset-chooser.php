@@ -345,8 +345,10 @@ class WebDAM_Asset_Chooser {
 
 		$api = wp_cache_get( 'webdam_api_instance' );
 
-		if ( $api->isAccessTokenExpired() ) {
+		if ( false === $api || $api->isAccessTokenExpired() ) {
+
 			$api->refreshAccess();
+
 		}
 
 		return $api;
