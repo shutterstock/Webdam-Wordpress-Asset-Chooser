@@ -339,7 +339,7 @@ class WebDAM_Asset_Chooser {
 
 		} else {
 
-			wp_send_json_success( array( 'url' => $local_image_url, 'filename' => $remote_image_filename ) );
+			wp_send_json_success( array( 'url' => $local_image_url, 'alttext' => $post_alttext ) );
 
 		}
 	}
