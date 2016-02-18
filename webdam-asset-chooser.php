@@ -252,17 +252,13 @@ class WebDAM_Asset_Chooser {
 
 		// Grab the sideloaded image ID we just set via the
 		// add_attachment actionm hook
-		$webdam_attachment_id = get_post_meta( $post_id, 'webdam_attachment_id_tmp', true );
+		$attachment_id = get_post_meta( $post_id, 'webdam_attachment_id_tmp', true );
 
 		// We don't need this any longer—let's ditch it.
 		delete_post_meta( $post_id, 'webdam_attachment_id_tmp' );
 
-		// Grab the new attachment's metadata so we can see what's in there
-		// We'll need to fetch additional data if what we've already received
-		// isn't sufficient.
-		$webdam_image_meta_data = wp_get_attachment_metadata( $webdam_attachment_id );
-
-		// Set attachment title with metadata
+		// Grab the current image metadata
+		$wordpress_image_meta = wp_get_attachment_metadata( $attachment_id );
 
 		$no_title = $no_caption = $no_credit = $no_copyright = false;
 
