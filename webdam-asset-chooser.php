@@ -241,9 +241,6 @@ class WebDAM_Asset_Chooser {
 		$webdam_asset_filename = sanitize_file_name( $_POST['webdam_asset_filename'] );
 
 		// Adjust the remote image url so we receive the largest image possible
-		// Determine the filename w/o it's extension
-		// We'll use this below as a helper for obtaining image metadata
-		$remove_image_filename_wo_ext = pathinfo( $remote_image_filename, PATHINFO_FILENAME );
 		$webdam_asset_url = str_replace( 'md_', '1280_', $webdam_asset_url );
 
 		// Hook into add_attachment so we can obtain the sideloaded image ID
