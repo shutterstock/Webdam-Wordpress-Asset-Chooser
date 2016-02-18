@@ -98,7 +98,10 @@ class WebDAM_Asset_Chooser {
 	}
 
 	/**
-	 *	Enqueues the JS which loads the domain name
+	 * Enqueues the JS which loads the domain name
+	 *
+	 * @todo localize vars
+	 * @todo Move status markup into _ template
 	 */
 	public function plugin_load_plugin_vars() {
 
@@ -146,6 +149,8 @@ class WebDAM_Asset_Chooser {
 
 	/**
 	 *	Markup for the settings page
+	 *
+	 * @todo Use i18n for output text
 	 */
 	public function plugin_options_page() {
 		?>
@@ -361,7 +366,13 @@ class WebDAM_Asset_Chooser {
 	}
 
 	/**
-	 * @param bool $refresh_cache
+	 * Ensure we always have a cache of the WebDAM API
+	 *
+	 * If no cache is present, create an instance of the API
+	 *
+	 * @param bool $refresh_cache Pass true to force a cache refresh
+	 *
+	 * @return null
 	 */
 	public function cache_webdam_api( $refresh_cache = false ) {
 
@@ -394,7 +405,12 @@ class WebDAM_Asset_Chooser {
 	}
 
 	/**
-	 * @return bool|mixed
+	 * Grab an up-to-date instance of the api
+	 *
+	 * Attempt to fetch a cache of the api, and refresh the access
+	 * token if it's expired
+	 *
+	 * @return bbaisley\Api An instance of the WebDAM API
 	 */
 	public function get_webdam_api() {
 
