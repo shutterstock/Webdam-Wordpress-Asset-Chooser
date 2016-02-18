@@ -260,33 +260,76 @@ class WebDAM_Asset_Chooser {
 		// Grab the current image metadata
 		$wordpress_image_meta = wp_get_attachment_metadata( $attachment_id );
 
-		$no_title = $no_caption = $no_credit = $no_copyright = false;
+		// Fetch metadata for the image
+		// Some images contain embeded metadata, but that is unreliable
+		// and often not present. We could create code to check existing data,
+		// and fetch what's needed, but the likelihood of images with data
+		// is slim, and depends on the photographer.
+		$webdam_image_meta = $this->get_webdam_asset_metadata( $webdam_asset_id );
 
-		// Check if we're missing metadata
-		// For now we're simply checking if there is
-		// a title, caption, and copyright
+		// Set the initial alttext
+		$post_alttext = '';
 
-		/*
-		 * we can find a better way to accomplish the following..
-		 *
-		if ( empty( $webdam_image_meta_data['image_meta']['title'] ) || $remove_image_filename_wo_ext === $webdam_image_meta_data['image_meta']['title'] ) {
-			$no_title = true;
+		if ( ! empty( $wordpress_image_meta['image_data']['title'] ) ) {
+			$post_alttext = $wordpress_image_meta['image_data']['title'];
 		}
 
-		if ( empty( $webdam_image_meta_data['image_meta']['caption'] ) ) {
-			$no_caption = true;
-		}
+		if ( false !== $webdam_image_meta ) {
 
-		if ( empty( $webdam_image_meta_data['image_meta']['copyright'] ) ) {
-			$no_copyright = true;
-		}
+			$post_title = $post_content = $post_excerpt = $post_credit = '';
 
-		if ( empty( $webdam_image_meta_data['image_meta']['credit'] ) ) {
-			$no_credit = true;
-		}
-		*/
+			if ( ! empty( $webdam_image_meta->headline ) ) {
+				$post_title = $webdam_image_meta->headline;
+				$post_alttext = $webdam_image_meta->headline;
+			}
 
-		$webdam_image_meta = $this->get_webdam_image_metadata( $remote_image_id );
+			if ( ! empty( $webdam_image_meta->caption ) ) {
+				$post_content = $webdam_image_meta->caption;
+				$post_excerpt = $webdam_image_meta->caption;
+			}
+
+			if ( ! empty( $webdam_image_meta->byline ) ) {
+				$post_credit = $webdam_image_meta->byline;
+			}
+
+			// Set the attachment post attributes
+			wp_update_post( array(
+				'ID'           => $attachment_id,
+				'post_title'   => $post_title,
+				'post_content' => $post_content,
+				'post_excerpt' => $post_excerpt,
+			) );
+
+			// Set the attachment post meta values
+			$attachment_post_metas = array(
+				'_wp_attachment_image_alt' => $post_alttext,
+				'_image_credit'            => $post_credit,
+				'_webdam_asset_id'         => $webdam_asset_id,
+				'_webdam_asset_filename'   => $webdam_asset_filename,
+			);
+
+			foreach ( $attachment_post_metas as $meta_key => $meta_value ) {
+				update_post_meta( $attachment_id, $meta_key, $meta_value );
+			}
+
+			// Merge the existing metadata (that WP found embedded within the image)
+			// with the metadata from the WebDAM API
+			if ( ! empty( $wordpress_image_meta['image_data'] ) && is_array( $wordpress_image_meta['image_data'] ) ){
+
+				$wordpress_image_meta['image_data'] = array_merge( $wordpress_image_meta['image_data'], (array) $webdam_image_meta );
+
+			} else {
+
+				$wordpress_image_meta['image_data'] = (array) $webdam_image_meta;
+
+			}
+
+			// Update the metadata stored for the image by WordPress
+			wp_update_attachment_metadata(
+				$attachment_id,
+				$wordpress_image_meta
+			);
+		}
 
 		// Return the local image url on success
 		// ..error message on failure
