@@ -56,6 +56,9 @@ class WebDAM_Asset_Chooser {
 	 * Handles registering hooks that initialize this plugin.
 	 */
 	protected function _setup_plugin() {
+
+		add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
+
 		add_action( 'admin_init', array( $this, 'plugin_admin_init' ) );
 		add_action( 'admin_init', array( $this, 'cache_webdam_api' ), 10, 0 );
 
@@ -78,6 +81,26 @@ class WebDAM_Asset_Chooser {
 
 		// Handle sideloading images from WebDAM
 		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
+	}
+
+	/**
+	 * Enqueue any scripts or styles
+	 */
+	public function action_wp_enqueue_scripts() {
+
+		if ( is_admin() ) {
+				
+		} else {
+
+			// Enqueue the webdam imported asset CSS
+			wp_enqueue_style(
+				'webdam-imported-asset',
+				plugins_url( 'assets/webdam-imported-asset.css', __FILE__ ),
+				array(),
+				false,
+				'screen'
+			);
+		}
 	}
 
 	/**

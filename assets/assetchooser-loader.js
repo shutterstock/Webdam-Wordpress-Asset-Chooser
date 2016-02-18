@@ -62,7 +62,7 @@
 
 										if ( response.success ) {
 
-											var elem_img = jQuery( '<img>' ).attr( 'src', response.data.url ).attr( 'alt', response.data.filename );
+											var elem_img = jQuery( '<img>' ).attr( 'src', response.data.url ).attr( 'alt', response.data.alttext ).addClass( 'webdam-imported-asset' );
 
 											ed.execCommand( 'mceInsertContent', 0, elem_img.prop( 'outerHTML' ) );
 
