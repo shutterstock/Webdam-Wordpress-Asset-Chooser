@@ -42,6 +42,9 @@
 						if (returnedImage.embedType != 'dismiss') {
 							if (returnedImage.embedType == 'preview') {
 
+								// Display waiting animation
+								$( '.webdam-asset-chooser-status' ).addClass( 'visible' );
+
 								// POST the image URL to the server via AJAX
 								// Server side—sideload the image into our media library
 								// embed the copied version of the image (from our ML)
@@ -64,6 +67,10 @@
 											ed.execCommand( 'mceInsertContent', 0, elem_img.prop( 'outerHTML' ) );
 
 										}
+
+										// Hide waiting animation
+										$( '.webdam-asset-chooser-status' ).removeClass( 'visible' );
+
 										// Close the WebDAM modal window
 										windowReference.close();
 									}

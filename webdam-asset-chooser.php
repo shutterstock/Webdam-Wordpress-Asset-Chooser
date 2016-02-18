@@ -112,7 +112,23 @@ class WebDAM_Asset_Chooser {
 		}
 
 		$domain_path = get_option( self::PLUGIN_ID . '-domain_path' );
+
+		wp_enqueue_style(
+			'webdam-chooser-styles',
+			plugins_url( 'assets/assetchooser.css', __FILE__ ),
+			array(),
+			false,
+			'screen'
+		);
 		?>
+
+		<div class="webdam-asset-chooser-status">
+			<div class="working">
+				<?php esc_html_e( 'Importing your WebDAM selection..', 'PMC' ); ?>
+				<img src="/wp-includes/js/thickbox/loadingAnimation.gif" alt="Waiting" />
+			</div>
+			<div class="done"></div>
+		</div>
 		<script type="text/javascript">
 			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
 			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
