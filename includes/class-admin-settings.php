@@ -44,7 +44,7 @@ class Admin {
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
 
 		// Display a notice when credentials are needed
-		if ( ! \get_webdam_settings() ) {
+		if ( ! \webdam_get_settings() ) {
 			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
 		}
 	}
