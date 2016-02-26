@@ -9,9 +9,11 @@
  *
  * @return boolean Returns TRUE if its ok to load up plugin functionality else FALSE
  */
-function get_webdam_settings() {
+function webdam_get_settings() {
 
 	$settings = get_option( 'webdam_settings' );
+
+	//@todo better way to verify that we have good settings
 
 	if ( ! empty( $settings ) && is_array( $settings ) ) {
 		if ( ! empty( $settings['webdam_account_domain'] ) && ! empty( $settings['webdam_account_username'] ) && ! empty( $settings['webdam_account_password'] ) && ! empty( $settings['api_client_id'] ) && ! empty( $settings['api_client_id'] ) ) {
@@ -35,7 +37,7 @@ function get_webdam_settings() {
  *
  * @return array|bool Array of metadata on success, false on failure
  */
-function get_webdam_asset_metadata( $asset_ids = array() ) {
+function webdam_get_asset_metadata( $asset_ids = array() ) {
 
 	$asset_ids = (array) $asset_ids;
 

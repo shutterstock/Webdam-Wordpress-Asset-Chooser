@@ -38,7 +38,7 @@ class Asset_Chooser {
 		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 
 		//load up plugin functionality only if domain path is saved in options
-		if ( \get_webdam_settings() ) {
+		if ( \webdam_get_settings() ) {
 
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
@@ -85,7 +85,7 @@ class Asset_Chooser {
 			return;
 		}
 
-		$settings = get_webdam_settings();
+		$settings = webdam_get_settings();
 
 		$domain_path = $settings['webdam_account_domain'];
 
@@ -195,7 +195,7 @@ class Asset_Chooser {
 		// and often not present. We could create code to check existing data,
 		// and fetch what's needed, but the likelihood of images with data
 		// is slim, and depends on the photographer.
-		$webdam_image_meta = \get_webdam_asset_metadata( $webdam_asset_id );
+		$webdam_image_meta = \webdam_get_asset_metadata( $webdam_asset_id );
 
 		// Set the initial alttext
 		$post_alttext = '';

@@ -71,7 +71,7 @@ class API {
 	 */
 	public function _init() {
 
-		if ( $settings = get_webdam_settings() ) {
+		if ( $settings = webdam_get_settings() ) {
 
 			// Only proceed if we have credentials to send
 			if (
