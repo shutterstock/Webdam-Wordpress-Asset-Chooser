@@ -16,6 +16,7 @@ class WebDAM_Asset_Chooser {
 	 * @var WebDAM_Asset_Chooser Singleton instance of class
 	 */
 	private static $_instance;
+require_once __DIR__ . '/includes/class-admin-settings.php';
 
 	/**
 	 * Handles initializing this class and returning the singleton instance after it's been cached.
@@ -103,22 +104,6 @@ class WebDAM_Asset_Chooser {
 		}
 	}
 
-	/**
-	 * Show a notice to admin users to update plugin options
-	 *
-	 * @return void
-	 */
-	public function show_admin_notice() {
-		/*
-		 * We want to show notice only to those users who can update options,
-		 * for everyone else the notice won't mean much if anything.
-		 */
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		printf( '<div class="error"><p><strong>Please update <a href="%s">WebDAM options</a> with your account URL.</strong></p></div>', esc_url( admin_url( 'options-general.php?page=' . self::PLUGIN_ID . '-plugin' ) ) );
-	}
 
 	/**
 	 * Enqueues the JS which loads the domain name
@@ -163,73 +148,6 @@ class WebDAM_Asset_Chooser {
 		<?php
 	}
 
-	/**
-	 *	Sets up the settings page for the WebDAM admin
-	 */
-	public function plugin_admin_add_page() {
-		add_options_page( 'WebDAM Asset Chooser', 'WebDAM', 'manage_options', self::PLUGIN_ID . '-plugin', array( $this, 'plugin_options_page' ) );
-	}
-
-	/**
-	 *	Markup for the settings page
-	 *
-	 * @todo Use i18n for output text
-	 */
-	public function plugin_options_page() {
-		?>
-		<div class="wrap">
-		<h2>WebDAM Asset Chooser Settings</h2>
-		This page allows you to set up your WebDAM Asset Chooser.
-		<form action="options.php" method="post">
-			<?php settings_fields( self::PLUGIN_ID . '-domain_path' ); ?>
-			<?php do_settings_sections( self::PLUGIN_ID . '-plugin' ); ?>
-
-			<input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" />
-		</form></div>
-
-		<?php
-	}
-
-	/**
-	 *	Initializes the WebDAM admin section
-	 */
-	public function plugin_admin_init() {
-		register_setting( self::PLUGIN_ID . '-domain_path', self::PLUGIN_ID . '-domain_path', array( $this, 'plugin_options_validate' ) );
-		add_settings_section( self::PLUGIN_ID . '-plugin_main', '', '', self::PLUGIN_ID . '-plugin' );
-		add_settings_field( self::PLUGIN_ID . '-plugin_domain_path', 'Your WebDAM Account', array( $this, 'plugin_setting_string' ), self::PLUGIN_ID . '-plugin', self::PLUGIN_ID . '-plugin_main' );
-	}
-
-
-	/**
-	 *	Displays the string which represents the WebDAM domain
-	 */
-	public function plugin_setting_string() {
-		$domain_path = get_option( self::PLUGIN_ID . '-domain_path' );
-?>
-		<input id="<?php echo esc_attr( self::PLUGIN_ID . '-domain_path' ); ?>" name="<?php echo esc_attr( self::PLUGIN_ID . '-domain_path' ); ?>" size="40" type="text" value="<?php echo esc_attr( $domain_path ); ?>" />
-		<p class="description">Your account URL, e.g. 'http://domain.webdamdb.com'</p>
-<?php
-	}
-
-	/**
-	 *	Simple validation for the domain, can be enhanced
-	 */
-	public function plugin_options_validate( $domain_path ) {
-
-		if ( empty( $domain_path ) || ! is_string( $domain_path ) || filter_var( trim( $domain_path ), FILTER_VALIDATE_URL ) === false ) {
-			//not a valid domain URL, bail out
-			return '';
-		}
-
-		$url_parts = parse_url( trim( $domain_path ) );
-
-		if ( ! is_array( $url_parts ) || empty( $url_parts ) || empty( $url_parts['scheme'] ) || empty( $url_parts['host'] ) ) {
-			return '';
-		}
-
-		return sprintf( '%s://%s', $url_parts['scheme'], $url_parts['host'] );
-
-	}
 
 	/**
 	 * Initialize TinyMCE table plugin and custom TinyMCE plugin
