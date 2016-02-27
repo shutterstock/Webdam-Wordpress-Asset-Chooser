@@ -16,14 +16,13 @@ class API {
 
 	public $base_url = 'https://apiv2.webdamdb.com/';
 
-	protected $grant_type = null;
+	protected $grant_type = 'authorization_code';
 
 	protected $client_id = null;
 	protected $client_secret = null;
-	protected $authorization_code = null;
 
-	protected $account_username = null;
-	protected $account_password = null;
+	protected $authorization_redirect_uri = '';
+	protected $authorization_code = null;
 
 	protected $access_token_type = null;
 	protected $access_token = null;
@@ -74,23 +73,11 @@ class API {
 		if ( $settings = webdam_get_settings() ) {
 
 			// Only proceed if we have credentials to send
-			if (
-				empty( $settings['api_client_id'] ) ||
-				empty( $settings['api_client_secret'] ) ||
-				empty( $settings['webdam_account_username'] ) ||
-				empty( $settings['webdam_account_password'] ) ) {
-
-				// not the right/complete settings
-				return;
-
-			} else {
+			if ( ! empty( $settings['api_client_id'] ) && ! empty( $settings['api_client_secret'] ) ) {
 
 				// Store internal references to the webdam settings
 				$this->client_id = $settings['api_client_id'];
 				$this->client_secret = $settings['api_client_secret'];
-				$this->grant_type = 'password';
-				$this->account_username = $settings['webdam_account_username'];
-				$this->account_password = $settings['webdam_account_password'];
 
 				$this->setup_hooks();
 			}
@@ -106,6 +93,7 @@ class API {
 	 */
 	public function setup_hooks() {
 		add_action( 'admin_init', array( $this, 'ensure_were_authorized' ) );
+		add_action( 'admin_init', array( $this, 'capture_authorization_code' ), 0, 10 );
 		add_action( 'webdam-saved-new-settings', array( $this, 'refresh_api_cache' ) );
 	}
 
@@ -151,6 +139,31 @@ class API {
 	}
 
 	/**
+	 * Capture the WebDAM API authorization_code from GET
+	 *
+	 * After the user has been taken to WebDAM to allow access
+	 * they're redirected back to the settings page with a new
+	 * GET 'code' variable in place. This can then be used to
+	 * obtain an access_token.
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	public function capture_authorization_code() {
+
+		if ( ! empty( $_GET['page'] ) ) {
+			if ( 'webdam-settings' === $_GET['page'] ) {
+				if ( ! empty( $_GET['code'] ) ) {
+
+					// We have an auth_code
+					$this->authorization_code = sanitize_text_field( $_GET['code'] );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Helper to determine if we're authenticated or not
 	 *
 	 * @param null
@@ -187,10 +200,17 @@ class API {
 
 		if ( empty( $this->access_token ) || $force_new_token ) {
 
-			// We need an access token
-			// @todo do something when this is false
-			// notice that something is wrong?
-			$this->fetch_access_token( $this->grant_type );
+			// Only send an authentication request if we have an authorization code
+			if ( ! empty( $this->authorization_code ) ) {
+
+				// Do the authentication/fetch an access token
+				$token_request = $this->do_authentication( $this->grant_type );
+
+				if ( empty( $token_request['data']->access_token ) ) {
+					// there was an error
+					// @todo surface the error
+				}
+			}
 
 		} else {
 
@@ -230,16 +250,7 @@ class API {
 					'client_id'     => $this->client_id,
 					'client_secret' => $this->client_secret,
 					'code'          => $this->authorization_code,
-					'redirect_uri'  => $this->redirect_uri,
-				);
-			break;
-			case 'password' :
-				$data = array(
-					'grant_type'    => $grant_type,
-					'client_id'     => $this->client_id,
-					'client_secret' => $this->client_secret,
-					'username'      => $this->account_username,
-					'password'      => $this->account_password,
+					'redirect_uri'  => $this->authorization_redirect_uri,
 				);
 			break;
 			case 'refresh_token' :
