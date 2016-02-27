@@ -52,7 +52,7 @@ class Asset_Chooser {
 
 		//load up plugin functionality only if we have settings
 		// and if we are authenticated
-		if ( \webdam_get_settings() && webdam_is_authenticated() ) {
+		if ( \webdam_get_settings() && \webdam_is_authenticated() ) {
 
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
