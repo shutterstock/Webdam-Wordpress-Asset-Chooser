@@ -31,6 +31,14 @@ class API {
 	protected $access_expires = 0;
 
 	/**
+	 * Fetch THE persistent instance of this class
+	 *
+	 * This one object lives forever. Created once,
+	 * it's soul eternal—and persistent.
+	 *
+	 * Bathed in the blood-fire—it's self-healing,
+	 * self-aware, and always has a valid access token.
+	 *
 	 * @param bool $refresh_cache
 	 *
 	 * @return API object instance
@@ -66,9 +74,15 @@ class API {
 	}
 
 	/**
+	 * Object initialization
 	 *
+	 * @param null
+	 *
+	 * @return null
 	 */
 	public function _init() {
+
+		$this->authorization_redirect_uri = admin_url( 'options-general.php?page=webdam-settings' );
 
 		if ( $settings = webdam_get_settings() ) {
 
@@ -81,19 +95,22 @@ class API {
 
 				$this->setup_hooks();
 			}
-
-		} else {
-			// no settings
-			return;
 		}
+
+		// no settings
+		return;
 	}
 
 	/**
 	 *	Setup the WordPress hooks
+	 *
+	 * @param null
+	 *
+	 * @return null
 	 */
 	public function setup_hooks() {
-		add_action( 'admin_init', array( $this, 'ensure_were_authorized' ) );
 		add_action( 'admin_init', array( $this, 'capture_authorization_code' ), 0, 10 );
+		add_action( 'admin_init', array( $this, 'ensure_were_authenticated' ), 0, 11 );
 		add_action( 'webdam-saved-new-settings', array( $this, 'refresh_api_cache' ) );
 	}
 
@@ -101,6 +118,10 @@ class API {
 	 * Refresh this classes instance cache
 	 *
 	 * @internal Called via action: webdam-saved-new-settings
+	 *
+	 * @param null
+	 *
+	 * @return null
 	 */
 	public function refresh_api_cache() {
 
@@ -191,14 +212,17 @@ class API {
 	 *
 	 * If no cache is present, create an instance of the API
 	 *
+	 * @param
+	 *
 	 * @return null
 	 */
-	public function ensure_were_authorized() {
+	public function ensure_were_authenticated() {
 
 		// For debugging — change to true to force a new token on page load
+		// @todo the force new token should only perform a token refresh
 		$force_new_token = false;
 
-		if ( empty( $this->access_token ) || $force_new_token ) {
+		if ( empty( $this->access_token ) ) {
 
 			// Only send an authentication request if we have an authorization code
 			if ( ! empty( $this->authorization_code ) ) {
@@ -220,24 +244,33 @@ class API {
 				// Refresh token
 				// @todo do something when this is false
 				// notice that something is wrong?
-				$this->fetch_access_token( 'refresh_token' );
+				$this->do_authentication( 'refresh_token' );
 			}
 
-			// We're authenticated — nothing needed.
-			// All api calls are now enabled
+			// We're authenticated — nothing else needed here.
+			// All api calls will work
 		}
 	}
 
 	/**
 	 * Fetch an access token from the WebDAM API
 	 *
-	 * @param string $grant_type The /token grant_type. Acceptable values are 'authorization_code', 'password', or 'refresh_token'
+	 * An initial access token is fetched using authentication
+	 * (the user is directed to authorize at WebDAM, and redirected back)
+	 *
+	 * That initial token, and all tokens after it—all expire in
+	 * one hour. When this plugin detects that a token is about
+	 * to expire, it does a refresh_token authentication to obtain
+	 * a new access token.
+	 *
+	 * The initial authorization_code and refresh_token always remain
+	 * the same. The token is what expires regularly.
+	 *
+	 * @param string $grant_type The /token grant_type. Acceptable values are 'authorization_code' or 'refresh_token'
 	 *
 	 * @return null|false False on failure
 	 */
-	public function fetch_access_token( $grant_type = '' ) {
-
-		$url = $this->base_url . 'oauth2/token';
+	public function do_authentication( $grant_type = '' ) {
 
 		$data = array();
 
@@ -264,7 +297,7 @@ class API {
 		}
 
 		// Fetch a token
-		$token_data = $this->post( $url, $data, false );
+		$token_data = $this->post( 'oauth2/token', $data, false );
 
 		if ( ! $token_data['success'] ) {
 			// Request failed
@@ -332,13 +365,13 @@ class API {
 	/**
 	 * Make a generic & configurable POST request to WebDAM
 	 *
-	 * @param string $url
+	 * @param string $endpoint
 	 * @param array  $data
 	 * @param bool   $send_authorization
 	 *
-	 * @return mixed
+	 * @return array An array containing a bool success, and an object response or a string error message on failure.
 	 */
-	public function post( $url = '', $data = array(), $send_authorization = true ) {
+	public function post( $endpoint = '', $data = array(), $send_authorization = true ) {
 
 		// POST requests to the WebDAM API may or may not need to be authenticated
 		// we only want to ensure we're authenticated (possibly fetch an access token)
@@ -346,7 +379,7 @@ class API {
 		// inherently are unable to be authenticated——infinite loops ensue, turmoil,
 		// fire, brimstone, etc.
 		if ( $send_authorization ) {
-			$this->ensure_were_authorized();
+			$this->ensure_were_authenticated();
 		}
 
 		// @todo setup default args
@@ -355,12 +388,13 @@ class API {
 			'body' => $data,
 		);
 
-		// @todo return error in a useful manner
 		if ( $send_authorization ) {
 			$args['headers'] = array(
 				'Authorization' => $this->access_token_type . ' ' . $this->access_token,
 			);
 		}
+
+		$url = $this->base_url . $endpoint;
 
 		// POST the request to the given url
 		$response = wp_safe_remote_post( $url, $args );
@@ -381,14 +415,16 @@ class API {
 	 *
 	 * All GET requests to webdam require authentication.
 	 *
-	 * @param string $url
+	 * @param string $endpoint
 	 *
 	 * @return bool
 	 */
-	public function get( $url = '' ) {
+	public function get( $endpoint = '' ) {
 
 		// All GET requests to webdam require authentication.
-		$this->ensure_were_authorized();
+		$this->ensure_were_authenticated();
+
+		$url = $this->base_url . $endpoint;
 
 		// GET a response for the given url
 		// @todo verify token and type
@@ -446,10 +482,10 @@ class API {
 		// this allows us to fetch metadata for up to 50 assets
 		$asset_ids = implode( ',', $asset_ids );
 
-		$url = "{$this->base_url}assets/$asset_ids/metadatas/xmp";
+		$endpoint = "assets/$asset_ids/metadatas/xmp";
 
 		// Fetch a token
-		$response = $this->get( $url );
+		$response = $this->get( $endpoint );
 
 		if ( $response['success'] ) {
 			return $response['data'];
@@ -459,7 +495,6 @@ class API {
 	}
 }
 
-// @todo only load if enabled in settings
 API::get_instance();
 
 // EOF
