@@ -122,6 +122,58 @@ class API {
 	}
 
 	/**
+	 * Get the WebDAM API Authorization URL
+	 *
+	 * This is the URL we send users to to authenticate their account
+	 * for use with our API.
+	 *
+	 * E.g. https://apiv2.webdamdb.com/oauth2/authorize?response_type=code&client_id=XXXX&redirect_uri=XXXX&state=STATE
+	 *
+	 * @param null
+	 *
+	 * @return string The authorization URL.
+	 */
+	public function get_authorization_url() {
+
+		$query_args = array(
+			'response_type' => 'code',
+			'client_id' => $this->client_id,
+			'redirect_uri' => $this->authorization_redirect_uri,
+			'state' => 'STATE',
+		);
+
+		$authorization_url = add_query_arg(
+			$query_args,
+			esc_url_raw( $this->base_url . 'oauth2/authorize' )
+		);
+
+		return $authorization_url;
+	}
+
+	/**
+	 * Helper to determine if we're authenticated or not
+	 *
+	 * @param null
+	 *
+	 * @return bool Return true|false if we're authenticated
+	 */
+	public function is_authenticated() {
+
+		// Do we have a token?
+		if ( ! empty( $this->access_token ) ) {
+
+			// Is that token valid?
+			if ( ! $this->is_access_token_expired() ) {
+
+				// Yep, it is—good to go
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Ensure we always have a cache of the WebDAM API
 	 *
 	 * If no cache is present, create an instance of the API
