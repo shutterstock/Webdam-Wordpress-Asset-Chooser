@@ -50,8 +50,9 @@ class Asset_Chooser {
 		// Handle sideloading images from WebDAM
 		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 
-		//load up plugin functionality only if domain path is saved in options
-		if ( \webdam_get_settings() ) {
+		//load up plugin functionality only if we have settings
+		// and if we are authenticated
+		if ( \webdam_get_settings() && webdam_is_authenticated() ) {
 
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
