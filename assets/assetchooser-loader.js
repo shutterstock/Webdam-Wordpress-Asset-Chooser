@@ -62,9 +62,9 @@
 
 										if ( response.success ) {
 
-											var elem_img = jQuery( '<img>' ).attr( 'src', response.data.url ).attr( 'alt', response.data.alttext ).addClass( 'webdam-imported-asset' );
+											var image_template = _.template( $( 'script#webdam-insert-image-template' ).html() );
 
-											ed.execCommand( 'mceInsertContent', 0, elem_img.prop( 'outerHTML' ) );
+											ed.execCommand( 'mceInsertContent', 0, image_template( response.data ) );
 
 										}
 

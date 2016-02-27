@@ -3,8 +3,13 @@
 namespace Webdam;
 
 /**
- * Class Asset_Chooser
- * @package Webdam
+ * TinyMCE Asset Chooser
+ *
+ * Creates a button on post editors to browse and select
+ * any of your WebDAM images.
+ *
+ * Sideloads selected images into your media library and fetches
+ * as much metadata about the image as possible from the WebDAM API.
  */
 class Asset_Chooser {
 
@@ -14,9 +19,13 @@ class Asset_Chooser {
 	private static $_instance;
 
 	/**
+	 * Fetch THE singleton instance of this class
+	 *
+	 * @param null
+	 *
 	 * @return Asset_Chooser object instance
 	 */
-	static function I() {
+	static function get_instance() {
 
 		if ( empty( static::$_instance ) ){
 
@@ -29,6 +38,10 @@ class Asset_Chooser {
 
 	/**
 	 * Handles registering hooks that initialize this plugin.
+	 *
+	 * @param null
+	 *
+	 * @return null
 	 */
 	protected function __construct() {
 
@@ -50,6 +63,10 @@ class Asset_Chooser {
 
 	/**
 	 * Enqueue any scripts or styles
+	 *
+	 * @param null
+	 *
+	 * @return null
 	 */
 	public function action_wp_enqueue_scripts() {
 
@@ -73,6 +90,10 @@ class Asset_Chooser {
 	 *
 	 * @todo localize vars
 	 * @todo Move status markup into _ template
+	 *
+	 * @param null
+	 *
+	 * @return null
 	 */
 	public function plugin_load_plugin_vars() {
 
@@ -93,6 +114,8 @@ class Asset_Chooser {
 			$domain_path = 'http://' . $domain_path;
 		}
 
+		wp_enqueue_script( 'underscore' );
+
 		wp_enqueue_style(
 			'webdam-chooser-styles',
 			WEBDAM_PLUGIN_URL . 'assets/assetchooser.css',
@@ -109,6 +132,9 @@ class Asset_Chooser {
 			</div>
 			<div class="done"></div>
 		</div>
+		<script type="text/template" id="webdam-insert-image-template">
+			[caption id="attachment_<%- attachment_id %>" align="alignnone" width="<%- width %>"]<img class="size-medium wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
+		</script>
 		<script type="text/javascript">
 			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
 			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
@@ -144,6 +170,14 @@ class Asset_Chooser {
 	 *
 	 * This is executed over AJAX from client-side when an image is chosen
 	 * in the WebDAM interface.
+	 *
+	 * @param null
+	 *
+	 * @handles $_POST intercept and processing for the
+	 *			pmc-webdam-sideload-image AJAX action
+	 *
+	 * @response JSON object containing status and returned data
+	 * @return null
 	 */
 	public function handle_ajax_image_sideload() {
 
@@ -178,7 +212,7 @@ class Asset_Chooser {
 		add_action( 'add_attachment', array( $this, 'add_attachment' ), 10, 1 );
 
 		// Sideload the image into WP
-		$local_image_url  = media_sideload_image( $webdam_asset_url, $post_id, '', 'src' );
+		$local_image_source  = media_sideload_image( $webdam_asset_url, $post_id, '', 'src' );
 
 		// Grab the sideloaded image ID we just set via the
 		// add_attachment actionm hook
@@ -263,14 +297,29 @@ class Asset_Chooser {
 
 		// Return the local image url on success
 		// ..error message on failure
-		if ( is_wp_error( $local_image_url ) ) {
+		if ( is_wp_error( $local_image_source ) ) {
 
 			wp_send_json_error( array( 'Unable to sideload image.' ) );
 
 		} else {
 
-			wp_send_json_success( array( 'url' => $local_image_url, 'alttext' => $post_alttext ) );
+			if ( false !== $webdam_image_meta ) {
 
+				wp_send_json_success( array(
+					'source'        => $local_image_source,
+					'alttext'       => $post_alttext,
+					'attachment_id' => $attachment_id,
+					'width'         => $wordpress_image_meta['width'],
+					'height'        => $wordpress_image_meta['height'],
+					'title'         => $post_title,
+					'caption'       => $post_content,
+				) );
+
+			} else {
+
+				wp_send_json_error( array( 'Unable to obtain meta data for image.' ) );
+
+			}
 		}
 	}
 
@@ -311,6 +360,6 @@ class Asset_Chooser {
 	}
 }
 
-Asset_Chooser::I();
+Asset_Chooser::get_instance();
 
 //EOF
