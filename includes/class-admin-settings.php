@@ -158,6 +158,12 @@ class Admin {
 	 */
 	public function create_settings_page() {
 
+		print_r(admin_url());
+
+		print_r(get_bloginfo('url'));
+
+		print_r($_SERVER);
+
 		// Set some default items
 		$api_status_text = __( 'API NOT Authenticated', 'webdam' );
 		$api_status_class = 'not-authenticated';
