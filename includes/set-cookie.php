@@ -16,6 +16,7 @@
 		return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
 
+	webdam_set_cookie('testingCookie', document.domain, 1);
 	webdam_set_cookie('widgetEmbedValue', getParameterByName('widgetEmbedValue'), 1);
 	</script>
 </head>

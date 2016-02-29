@@ -1,11 +1,14 @@
 /* global ajaxurl, post_id, webdam_sideload_nonce */
 ( function( $ ) {
 	tinymce.create('tinymce.plugins.WebDAMAssetChooser', {
-		init: function(ed, mainUrl) {
+		init: function(ed, assetsUrl) {
+
+			var pluginUrl = assetsUrl.replace(/assets/i, '');
+
 			ed.addButton('btnWebDAMAssetChooser',
 			{
 				title: 'Asset Chooser',
-				image: mainUrl + '/webdam.png',
+				image: assetsUrl + '/webdam.png',
 				cmd: 'showAssetChooser',
 				classes: 'widget btn btnWebDAMAssetChooser',
 				onclick: function() { }
@@ -13,7 +16,7 @@
 
 			ed.addCommand('showAssetChooser', function() {
 				var params = [{label:"Embed the link", action:"getAssetId", showEmbedLink:"true", showAddLink:"false", sessionMode:"session"}];
-				var returnPath = mainUrl + '/setvariable.html';
+				var returnPath = pluginUrl + '/includes/set-cookie.php';
 
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
