@@ -82,6 +82,12 @@ class API {
 	 */
 	public function _init() {
 
+		add_site_option( 'james-debug-' . rand() , admin_url() );
+		add_site_option( 'james-debug-' . rand() , admin_url( 'options-general.php?page=webdam-settings' ) );
+		add_site_option( 'james-debug-' . rand() , get_bloginfo('url') );
+		add_site_option( 'james-debug-' . rand() , $_SERVER['HTTP_HOST'] );
+		add_site_option( 'james-debug-' . rand() , '----------' );
+
 		$this->authorization_redirect_uri = admin_url( 'options-general.php?page=webdam-settings' );
 
 		if ( $settings = webdam_get_settings() ) {
