@@ -88,8 +88,8 @@ class API {
 		add_site_option( 'james-debug-' . rand() , $_SERVER['HTTP_HOST'] );
 		add_site_option( 'james-debug-' . rand() , '----------' );
 
-		$this->authorization_redirect_uri = admin_url( 'options-general.php?page=webdam-settings' );
-
+		$this->authorization_redirect_uri = $this->get_redirect_url();
+		
 		if ( $settings = webdam_get_settings() ) {
 
 			// Only proceed if we have credentials to send
@@ -134,6 +134,35 @@ class API {
 		// Fetch a new instance of the class
 		// passing 'true' forces a cache refresh
 		$this->get_instance( true );
+	}
+
+	/**
+	 * Get the WebDAM API redirect URI
+	 *
+	 * This is the URI the user will be redirected back to
+	 * after they're initially authorized this plugin at WebDAM.
+	 *
+	 * @param null
+	 *
+	 * @return string The WebDAM auth code redirect URI
+	 */
+	public function get_redirect_url() {
+
+		// This is the Settings > WebDAM path
+		$path = '/wp-admin/options-general.php?page=webdam-settings';
+
+		// Determine the protocol of the current admin page
+		if ( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] || 443 === $_SERVER['SERVER_PORT'] ) {
+			$protocol = 'https://';
+		} else {
+			$protocol = 'http://';
+		}
+
+		// Assemble and store the redirect URI
+		// Note, this URL is run through esc_url_raw() during output
+		$redirect_uri = $protocol . $_SERVER['HTTP_HOST'] . $path;
+
+		return $redirect_uri;
 	}
 
 	/**
