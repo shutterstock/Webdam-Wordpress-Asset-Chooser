@@ -524,6 +524,6 @@ class API {
 	}
 }
 
-API::get_instance( true );
+API::get_instance();
 
 // EOF
