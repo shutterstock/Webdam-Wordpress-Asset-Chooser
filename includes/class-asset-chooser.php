@@ -134,7 +134,7 @@ class Asset_Chooser {
 			<div class="done"></div>
 		</div>
 		<script type="text/template" id="webdam-insert-image-template">
-			[caption id="attachment_<%- attachment_id %>" align="alignnone" width="<%- width %>"]<img class="size-medium wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
+			[caption id="attachment_<%- attachment_id %>" align="alignnone" class="webdam-imported-asset"]<img class="size-full wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
 		</script>
 		<script type="text/javascript">
 			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
