@@ -88,7 +88,7 @@
 								windowReference.close();
 							}
 						}
-
+						
 						currentCookieValue = null;
 					}
 				}, 500);

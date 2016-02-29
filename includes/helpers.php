@@ -4,6 +4,46 @@
  */
 
 /**
+ * Get the site URL
+ *
+ * Functions like plugins_url() fail in our QA environment.
+ *
+ * @return string The current siteurl
+ */
+function webdam_get_siteurl() {
+
+	// Determine the protocol of the current admin page
+	if ( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] || 443 === $_SERVER['SERVER_PORT'] ) {
+		$protocol = 'https://';
+	} else {
+		$protocol = 'http://';
+	}
+
+	// Assemble and store the redirect URI
+	// Note, this URL is run through esc_url_raw() during output
+	$plugin_url = $protocol . $_SERVER['HTTP_HOST'];
+
+	return $plugin_url;
+}
+
+/**
+ * Get the plugin URL
+ *
+ * Functions like plugins_url() fail in our QA environment.
+ *
+ * @return string The plugin URL
+ */
+function webdam_get_plugin_url() {
+
+	// Determine the web-accessible path to this plugin
+	$path = str_replace( $_SERVER['DOCUMENT_ROOT'], '', WEBDAM_PLUGIN_DIR );
+
+	$url = webdam_get_siteurl() . $path . '/';
+
+	return $url;
+}
+
+/**
  * Check whether is it ok to load up plugin functionality or not.
  *
  * @param null
