@@ -160,6 +160,8 @@ class Admin {
 
 		print_r(admin_url());
 
+		print_r( admin_url( 'options-general.php?page=webdam-settings' ) );
+
 		print_r(get_bloginfo('url'));
 
 		print_r($_SERVER);
