@@ -42,6 +42,7 @@ class Admin {
 		// Create the Settings > Webdam page
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
+		add_action( 'update_option_webdam_settings', array( $this, 'update_option_webdam_settings' ) );
 
 		// Enqueue styles and scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
@@ -141,6 +142,8 @@ class Admin {
 
 		/**
 		 * Register the webdam_settings setting
+		 *
+		 * sanitize_option_webdam_settings
 		 */
 		register_setting(
 			'webdam_settings',
@@ -271,30 +274,71 @@ class Admin {
 	 * @return array
 	 */
 	public function webdam_settings_input_sanitization( $input ) {
+
+		$old_settings = get_option( 'webdam_settings' );
 		$new_settings = array();
+
+		$response_type = 'updated';
+		$response_message = '';
 
 		// @todo encrypt the piss outta this stuff for storage
 		// ...but in a way we can still retrieve values for sending auth
 		// to webdam in the api.
 
+		// Save the domain
 		if( isset( $input['webdam_account_domain'] ) ) {
 			$new_settings['webdam_account_domain'] = sanitize_text_field( $input['webdam_account_domain'] );
 		}
 
+		// Save the client id
 		if( isset( $input['api_client_id'] ) ) {
 			$new_settings['api_client_id'] = sanitize_text_field( $input['api_client_id'] );
 		}
 
+		// Save the client secret
 		if( isset( $input['api_client_secret'] ) ) {
 			$new_settings['api_client_secret'] = sanitize_text_field( $input['api_client_secret'] );
 		}
 
-		// Broadcast that changes are being saved
-		if ( ! empty( $new_settings ) ) {
-			do_action( 'webdam-saved-new-settings' );
+		// Determine what status message to display to the user
+		if ( $new_settings === $old_settings ) {
+			$response_message = __( 'No changes made.', 'webdam' );
+		} else {
+			$response_message = __( 'Settings saved.', 'webdam' );
+
+			if ( ! empty( $old_settings ) ) {
+				$response_type = 'error';
+				$response_message = __( 'Looks like you\'ve changed your WebDAM settings. Please authorize the API again.', 'webdam' );
+			}
 		}
 
+		// Display a message to the user
+		if ( ! empty( $response_message ) ) {
+			add_settings_error(
+				'webdam-settings-respsonse',
+				esc_attr( 'webdam-settings-' . $response_type ),
+				$response_message,
+				$response_type
+			);
+		}
+
+		// Update the values stored in our database
 		return $new_settings;
+	}
+
+	/**
+	 * Fires after the webdam_settings option is saved
+	 *
+	 * @param mixed  $old_value The old option value.
+	 * @param mixed  $new_value The new option value.
+	 * @param string $option    Option name.
+	 */
+	public function update_option_webdam_settings( $old_value, $new_value, $option ) {
+
+		// If new settings are being saved broadcast that changes are being saved
+		if ( $new_value !== $old_value ) {
+			do_action( 'webdam-saved-new-settings' );
+		}
 	}
 }
 
