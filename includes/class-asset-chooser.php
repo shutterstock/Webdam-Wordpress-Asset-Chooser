@@ -47,6 +47,10 @@ class Asset_Chooser {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
 
+		add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
+
+		add_action( 'wp_ajax_nopriv_webdam_get_api_response', array( $this, 'ajax_get_api_response' ) );
+
 		// Handle sideloading images from WebDAM
 		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 
@@ -60,6 +64,65 @@ class Asset_Chooser {
 			// Load admin variable for the domain in the plugin
 			add_action( 'admin_enqueue_scripts', array( $this, 'plugin_load_plugin_vars' ) );
 		}
+	}
+
+	/**
+	 * Allow the WebDAM domain to query our site
+	 *
+	 * @since 3.4.0
+	 *
+	 * @param array $allowed_origins {
+	 *     Default allowed HTTP origins.
+	 *     @type string Non-secure URL for admin origin.
+	 *     @type string Secure URL for admin origin.
+	 *     @type string Non-secure URL for home origin.
+	 *     @type string Secure URL for home origin.
+	 * }
+	 *
+	 * @return array The possibly modified array of allowed origins
+	 */
+	function allowed_http_origins( $allowed_origins ) {
+
+		$settings = webdam_get_settings();
+
+		$allowed_origins[] = 'http://' . $settings['webdam_account_domain'];
+
+		return $allowed_origins;
+	}
+
+	/**
+	 * Render out a mock API response for WebDAM to consume
+	 *
+	 * WebDAM doesn't allow us to simply pass an access_token
+	 * in the asset chooser iFrame URL. Instead, the &tokenpath=
+	 * query var in the URL itself passes a URL which WebDAM can
+	 * query via AJAX to obtain the credentials needed to authenticate.
+	 *
+	 * On WebDAM's side they're expecting to receive the full API
+	 * response given when you authenticate with the API. This
+	 * is quite dumb but that's how their system is setup.
+	 *
+	 * This mock JSON output matches the same output we recieve
+	 * in the class-api.php:do_authentication() function, but uses
+	 * the access and refresh tokens we already have.
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	function ajax_get_api_response() {
+
+		$mock_api_response = array(
+			'access_token' => webdam_get_current_access_token(),
+			'expires_in' => 3600,
+			'token_type' => 'bearer',
+			'scope' => null,
+			'refresh_token' => webdam_get_current_refresh_token()
+		);
+
+		wp_send_json( $mock_api_response );
+
+		die();
 	}
 
 	/**
@@ -140,6 +203,7 @@ class Asset_Chooser {
 			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
 			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
 			var asset_chooser_domain = <?php echo wp_json_encode( $domain_path ); ?>;
+			var webdam_get_current_api_response_url = <?php echo wp_json_encode( add_query_arg( 'action', 'webdam_get_api_response', admin_url( 'admin-ajax.php' ) ) ); ?>;
 		</script>
 		<?php
 	}
