@@ -124,4 +124,33 @@ function webdam_is_authenticated() {
 	return false;
 }
 
+/**
+ * Get the current access_token
+ *
+ * @param null
+ *
+ * @return string The access token
+ */
+function webdam_get_current_access_token() {
+
+	$api = Webdam\API::get_instance();
+
+	return $api->get_current_access_token();
+}
+
+/**
+ * Get the current refresh_token
+ *
+ * @param null
+ *
+ * @return string The refresh token
+ */
+function webdam_get_current_refresh_token() {
+
+	$api = Webdam\API::get_instance();
+
+	return $api->get_current_refresh_token();
+}
+
+
 // EOF

@@ -242,9 +242,10 @@ class API {
 			if ( $this->is_access_token_expired() ) {
 
 				// Refresh token
+				$this->do_authentication( 'refresh_token' );
+			} else {
 				// @todo do something when this is false
 				// notice that something is wrong?
-				$this->do_authentication( 'refresh_token' );
 			}
 
 			// We're authenticated — nothing else needed here.
@@ -360,6 +361,28 @@ class API {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Get the current access token
+	 *
+	 * @param null
+	 *
+	 * @return string The access token
+	 */
+	public function get_current_access_token() {
+		return $this->access_token;
+	}
+
+	/**
+	 * Get the current refresh token
+	 *
+	 * @param null
+	 *
+	 * @return string The refresh token
+	 */
+	public function get_current_refresh_token() {
+		return $this->refresh_token;
 	}
 
 	/**
