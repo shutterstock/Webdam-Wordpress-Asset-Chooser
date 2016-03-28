@@ -161,7 +161,7 @@ class Admin {
 	 */
 	public function create_settings_page() {
 
-		$api = blah\API::get_instance();
+		$api = API::get_instance();
 		print_r($api);
 
 		phpinfo();
