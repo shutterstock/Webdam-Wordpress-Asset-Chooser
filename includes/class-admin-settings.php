@@ -164,8 +164,6 @@ class Admin {
 		$api = API::get_instance();
 		print_r($api);
 
-		phpinfo();
-
 		// Set some default items
 		$api_status_text = __( 'API NOT Authenticated', 'webdam' );
 		$api_status_class = 'not-authenticated';
