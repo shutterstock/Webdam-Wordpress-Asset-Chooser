@@ -4,20 +4,36 @@
  */
 
 /**
+ * Determine the current protocol used
+ *
+ * @param null
+ *
+ * @return string The site protocol for use in a URL, e.g. http:// or https://
+ */
+function webdam_get_site_protocol() {
+
+	$protocol = 'http://';
+
+	// Determine the protocol of the current admin page
+	if ( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] || 443 === $_SERVER['SERVER_PORT'] ) {
+		$protocol = 'https://';
+	}
+
+	return $protocol;
+}
+
+/**
  * Get the site URL
  *
  * Functions like plugins_url() fail in our QA environment.
+ *
+ * @param null
  *
  * @return string The current siteurl
  */
 function webdam_get_siteurl() {
 
-	// Determine the protocol of the current admin page
-	if ( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] || 443 === $_SERVER['SERVER_PORT'] ) {
-		$protocol = 'https://';
-	} else {
-		$protocol = 'http://';
-	}
+	$protocol = webdam_get_site_protocol();
 
 	// Assemble and store the redirect URI
 	// Note, this URL is run through esc_url_raw() during output
