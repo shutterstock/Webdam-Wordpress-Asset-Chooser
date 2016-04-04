@@ -21,10 +21,7 @@ require_once __DIR__ . '/includes/class-api.php';
 require_once __DIR__ . '/includes/class-asset-chooser.php';
 
 print_r(WEBDAM_PLUGIN_URL);
-http://wwd.qa.pmc.com/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/webdam-asset-chooser/
 print_r(plugin_dir_url( __FILE__ ));
-http://wwd.qa.pmc.com/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/webdam-asset-chooser/
-
 plugins_url( '/', __FILE__ );
 
 // EOF
