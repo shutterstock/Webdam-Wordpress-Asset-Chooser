@@ -177,8 +177,18 @@ class Asset_Chooser {
 		if ( false === strpos( $domain_path, '://' ) ) {
 			$domain_path = webdam_get_site_protocol() . $domain_path;
 		}
-		
-		$return_url = webdam_get_siteurl() . '/includes/set-cookie.html';
+
+		// Get the site URL for the WebDAM cookie setting
+		// document.domain may be different than the admin domain
+		// in set-cookie.html we need to set the cookie with
+		// the domain used by the admin.
+
+		// If WEBDAM_PLUGIN_DIR is:
+		// /srv/www/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/
+		// The following will strip off /srv/www/
+		$plugin_path = str_replace( $_SERVER['DOCUMENT_ROOT'], '', WEBDAM_PLUGIN_DIR );
+
+		$return_url = webdam_get_site_protocol() . $_SERVER['HTTP_HOST'] . $plugin_path . WEBDAM_PLUGIN_SLUG . '/includes/set-cookie.html';
 		
 		wp_enqueue_script( 'underscore' );
 

@@ -22,28 +22,6 @@ function webdam_get_site_protocol() {
 }
 
 /**
- * Get the site URL for the WebDAM cookie setting
- *
- * document.domain may be different than the admin domain
- * in set-cookie.html we need to set the cookie with
- * the domain used by the admin.
- *
- * @param null
- *
- * @return string The current siteurl
- */
-function webdam_get_siteurl() {
-
-	$protocol = webdam_get_site_protocol();
-
-	// Assemble and store the redirect URI
-	// Note, this URL is run through esc_url_raw() during output
-	$plugin_url = $protocol . $_SERVER['HTTP_HOST'];
-
-	return $plugin_url;
-}
-
-/**
  * Check whether is it ok to load up plugin functionality or not.
  *
  * @param null
