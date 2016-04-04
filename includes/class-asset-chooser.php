@@ -178,6 +178,24 @@ class Asset_Chooser {
 			$domain_path = webdam_get_site_protocol() . $domain_path;
 		}
 
+		// Get the site URL for the WebDAM cookie setting
+		// document.domain may be different than the admin domain
+		// in set-cookie.html we need to set the cookie with the domain used
+		// by the admin.
+		// get_site_url() and $_SERVER['HTTP_HOST'] both return something like
+		// pmcvip-831.wwd.qa.pmc.com but plugins_url() returns something like
+		// wwd.qa.pmc.com. This is problematic. The following builds a url
+		// using the domain from get_site_url() but the path from plugins_url()
+
+		// If WEBDAM_PLUGIN_DIR is:
+		// /srv/www/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/
+		// The following will strip off /srv/www/
+		$plugin_path = str_replace( $_SERVER['DOCUMENT_ROOT'], '', WEBDAM_PLUGIN_DIR );
+
+		// The following return_url will look something like:
+		// http://pmcvip-831.wwd.qa.pmc.com/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/webdam-asset-chooser/includes/set-cookie.html
+		$return_url = webdam_get_site_protocol() . $_SERVER['HTTP_HOST'] . $plugin_path . '/includes/set-cookie.html';
+
 		wp_enqueue_script( 'underscore' );
 
 		wp_enqueue_style(
@@ -203,6 +221,7 @@ class Asset_Chooser {
 			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
 			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
 			var asset_chooser_domain = <?php echo wp_json_encode( $domain_path ); ?>;
+			var webdam_return_url = <?php echo wp_json_encode( esc_url_raw( $return_url ) ); ?>;
 			var webdam_get_current_api_response_url = <?php echo wp_json_encode( add_query_arg( 'action', 'webdam_get_api_response', admin_url( 'admin-ajax.php' ) ) ); ?>;
 		</script>
 		<?php
