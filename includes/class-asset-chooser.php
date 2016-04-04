@@ -180,8 +180,12 @@ class Asset_Chooser {
 
 		// Get the site URL for the WebDAM cookie setting
 		// document.domain may be different than the admin domain
-		// in set-cookie.html we need to set the cookie with
-		// the domain used by the admin.
+		// in set-cookie.html we need to set the cookie with the domain used
+		// by the admin.
+		// get_site_url() and $_SERVER['HTTP_HOST'] both return something like
+		// pmcvip-831.wwd.qa.pmc.com but plugins_url() returns something like
+		// wwd.qa.pmc.com. This is problematic. The following builds a url
+		// using the domain from get_site_url() but the path from plugins_url()
 
 		// If WEBDAM_PLUGIN_DIR is:
 		// /srv/www/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/
@@ -191,7 +195,7 @@ class Asset_Chooser {
 		// The following return_url will look something like:
 		// http://pmcvip-831.wwd.qa.pmc.com/wp-content-sites/pmcvip-831/themes/vip/pmc-plugins/webdam-asset-chooser/includes/set-cookie.html
 		$return_url = webdam_get_site_protocol() . $_SERVER['HTTP_HOST'] . $plugin_path . '/includes/set-cookie.html';
-		
+
 		wp_enqueue_script( 'underscore' );
 
 		wp_enqueue_style(
