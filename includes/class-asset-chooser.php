@@ -188,7 +188,7 @@ class Asset_Chooser {
 		// The following will strip off /srv/www/
 		$plugin_path = str_replace( $_SERVER['DOCUMENT_ROOT'], '', WEBDAM_PLUGIN_DIR );
 
-		$return_url = webdam_get_site_protocol() . $_SERVER['HTTP_HOST'] . $plugin_path . WEBDAM_PLUGIN_SLUG . '/includes/set-cookie.html';
+		$return_url = webdam_get_site_protocol() . $_SERVER['HTTP_HOST'] . $plugin_path . '/includes/set-cookie.html';
 		
 		wp_enqueue_script( 'underscore' );
 
