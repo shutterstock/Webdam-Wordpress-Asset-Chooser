@@ -22,6 +22,6 @@ require_once __DIR__ . '/includes/class-asset-chooser.php';
 
 print_r(WEBDAM_PLUGIN_URL);
 print_r(plugin_dir_url( __FILE__ ));
-plugins_url( '/', __FILE__ );
+print_r(plugins_url( '/', __FILE__ ));
 
 // EOF
