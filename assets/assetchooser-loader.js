@@ -16,11 +16,11 @@
 
 			ed.addCommand('showAssetChooser', function() {
 				var params = [{label:"Embed the link", action:"getAssetId", showEmbedLink:"true", showAddLink:"false"}];
-				var returnPath = pluginUrl + '/includes/set-cookie.html';
 
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
-					url: asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(returnPath) + '&tokenpath=' + encodeURIComponent(webdam_get_current_api_response_url) + '&params=' + encodeURIComponent(JSON.stringify(params)),
+					url: asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(webdam_return_url) + '&tokenpath=' + encodeURIComponent(webdam_get_current_api_response_url) + '&params=' + encodeURIComponent(JSON.stringify(params)),
+
 					width: 940,
 					height: 600,
 					onclose: function() {
