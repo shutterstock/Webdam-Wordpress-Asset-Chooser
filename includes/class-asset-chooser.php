@@ -177,7 +177,9 @@ class Asset_Chooser {
 		if ( false === strpos( $domain_path, '://' ) ) {
 			$domain_path = webdam_get_site_protocol() . $domain_path;
 		}
-
+		
+		$return_url = webdam_get_siteurl() . '/includes/set-cookie.html';
+		
 		wp_enqueue_script( 'underscore' );
 
 		wp_enqueue_style(
@@ -203,6 +205,7 @@ class Asset_Chooser {
 			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
 			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
 			var asset_chooser_domain = <?php echo wp_json_encode( $domain_path ); ?>;
+			var webdam_return_url = <?php echo wp_json_encode( $return_url ); ?>;
 			var webdam_get_current_api_response_url = <?php echo wp_json_encode( add_query_arg( 'action', 'webdam_get_api_response', admin_url( 'admin-ajax.php' ) ) ); ?>;
 		</script>
 		<?php
