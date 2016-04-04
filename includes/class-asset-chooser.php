@@ -85,7 +85,7 @@ class Asset_Chooser {
 
 		$settings = webdam_get_settings();
 
-		$allowed_origins[] = 'https://' . $settings['webdam_account_domain'];
+		$allowed_origins[] = webdam_get_site_protocol() . $settings['webdam_account_domain'];
 
 		return $allowed_origins;
 	}
@@ -175,7 +175,7 @@ class Asset_Chooser {
 		$domain_path = $settings['webdam_account_domain'];
 
 		if ( false === strpos( $domain_path, '://' ) ) {
-			$domain_path = 'https://' . $domain_path;
+			$domain_path = webdam_get_site_protocol() . $domain_path;
 		}
 
 		wp_enqueue_script( 'underscore' );

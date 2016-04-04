@@ -16,7 +16,7 @@
 
 			ed.addCommand('showAssetChooser', function() {
 				var params = [{label:"Embed the link", action:"getAssetId", showEmbedLink:"true", showAddLink:"false"}];
-				var returnPath = pluginUrl + '/includes/set-cookie.php';
+				var returnPath = pluginUrl + '/includes/set-cookie.html';
 
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
