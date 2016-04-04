@@ -20,4 +20,7 @@ require_once __DIR__ . '/includes/class-admin-settings.php';
 require_once __DIR__ . '/includes/class-api.php';
 require_once __DIR__ . '/includes/class-asset-chooser.php';
 
+print_r(WEBDAM_PLUGIN_URL);
+print_r(plugin_dir_url( __FILE__ ));
+
 // EOF
