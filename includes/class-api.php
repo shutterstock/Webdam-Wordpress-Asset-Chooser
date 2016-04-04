@@ -82,7 +82,7 @@ class API {
 	 */
 	public function _init() {
 
-		$this->authorization_redirect_uri = webdam_get_siteurl() . '/wp-admin/options-general.php?page=webdam-settings';
+		$this->authorization_redirect_uri = get_site_url() . '/wp-admin/options-general.php?page=webdam-settings';
 
 		if ( $settings = webdam_get_settings() ) {
 
