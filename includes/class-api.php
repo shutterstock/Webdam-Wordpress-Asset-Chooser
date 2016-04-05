@@ -82,7 +82,16 @@ class API {
 	 */
 	public function _init() {
 
-		$this->authorization_redirect_uri = get_site_url() . '/wp-admin/options-general.php?page=webdam-settings';
+		// The redirect URL points to the settings page
+		// created at \Webdam\Admin::add_plugin_page()
+		// So that after authenticating the user is redirected
+		// back to the settings page they initially started
+		// the authentication at.
+		$this->authorization_redirect_uri = add_query_arg(
+			'page',
+			'webdam-settings',
+			admin_url( 'options-general.php' )
+		);
 
 		if ( $settings = webdam_get_settings() ) {
 

@@ -122,6 +122,7 @@ class Admin {
 	 */
 	public function add_plugin_page() {
 
+		// Create the 'WebDAM' Settings page
 		add_options_page(
 			'WebDAM Settings',
 			'WebDAM',
@@ -129,6 +130,36 @@ class Admin {
 			'webdam-settings',
 			array( $this, 'create_settings_page' )
 		);
+
+		// Create the soon-to-be hidden admin set cookie page
+		// This page is used to set the chosen asset cookie
+		// it needs to be accessible, but hidden from the admin menu
+		add_options_page(
+			'WebDAM Set Cookie',
+			'WebDAM Set Cookie',
+			'manage_options',
+			'webdam-set-cookie',
+			array( $this, 'create_set_cookie_page' )
+		);
+
+		// Hide the admin set cookie page
+		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
+	}
+
+	/**
+	 * Render the hidden admin set cookie page
+	 *
+	 * This page is used to set the chosen asset cookie
+	 * it needs to be accessible, but hidden from the admin menu
+	 *
+	 * @todo enqueue the cookie js instead of including it
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	public function create_set_cookie_page() {
+		include( WEBDAM_PLUGIN_DIR . '/includes/set-cookie.html' );
 	}
 
 	/**
