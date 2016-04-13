@@ -136,6 +136,16 @@ class Asset_Chooser {
 
 		if ( is_admin() ) {
 
+			wp_enqueue_script( 'underscore' );
+
+			wp_enqueue_style(
+				'webdam-chooser-styles',
+				WEBDAM_PLUGIN_URL . 'assets/webdam-asset-chooser.css',
+				array(),
+				false,
+				'screen'
+			);
+
 		} else {
 
 			// Enqueue the webdam imported asset CSS
@@ -186,16 +196,6 @@ class Asset_Chooser {
 			'webdam-set-cookie',
 			admin_url( 'options-general.php' )
 		);
-
-		wp_enqueue_script( 'underscore' );
-
-		wp_enqueue_style(
-			'webdam-chooser-styles',
-			WEBDAM_PLUGIN_URL . 'assets/assetchooser.css',
-			array(),
-			false,
-			'screen'
-		);
 		?>
 
 		<div class="webdam-asset-chooser-status">
@@ -225,7 +225,7 @@ class Asset_Chooser {
 	 * @return array Array of TinyMCE plugins
 	 */
 	public function mce_external_plugins( $plugin_array ) {
-		$plugin_array['webdam_asset_chooser'] = WEBDAM_PLUGIN_URL . 'assets/assetchooser-loader.js';
+		$plugin_array['webdam_asset_chooser'] = WEBDAM_PLUGIN_URL . 'assets/webdam-asset-chooser.js';
 		return $plugin_array;
 	}
 

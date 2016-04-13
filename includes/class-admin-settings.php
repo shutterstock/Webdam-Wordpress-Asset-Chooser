@@ -62,28 +62,32 @@ class Admin {
 	 */
 	public function wp_enqueue_scripts() {
 
-		// Only enqueue these items on our settings page
+		// Only enqueue these items on our settings pages
 		if ( ! empty( $_GET['page'] ) ) {
 
 			if ( 'webdam-settings' === $_GET['page'] ) {
 
-				// Enqueue the webdam admin JS
-				wp_enqueue_script(
-					'webdam-admin-settings',
-					WEBDAM_PLUGIN_URL . 'assets/admin-settings.js',
-					array( 'jquery' ),
-					false,
-					false
-				);
-
-				// Enqueue the webdam admin CSS
+				// Enqueue the WebDAM admin settings CSS
 				wp_enqueue_style(
 					'webdam-admin-settings',
-					WEBDAM_PLUGIN_URL . 'assets/admin-settings.css',
+					WEBDAM_PLUGIN_URL . 'assets/webdam-admin-settings.css',
 					array(),
 					false,
 					'screen'
 				);
+			}
+
+			if ( 'webdam-set-cookie' == $_GET['page'] ) {
+
+				// Enqueue the WebDAM cookie setting JavaScript
+				wp_enqueue_script(
+					'webdam-set-cookie',
+					WEBDAM_PLUGIN_URL . 'assets/webdam-set-cookie.js',
+					array(),
+					false,
+					true
+				);
+
 			}
 		}
 	}
@@ -152,14 +156,19 @@ class Admin {
 	 * This page is used to set the chosen asset cookie
 	 * it needs to be accessible, but hidden from the admin menu
 	 *
-	 * @todo enqueue the cookie js instead of including it
-	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function create_set_cookie_page() {
-		include( WEBDAM_PLUGIN_DIR . '/includes/set-cookie.html' );
+	public function create_set_cookie_page() { ?>
+
+		<p>
+			This page is used to set the WebDAM chosen asset cookie.
+			<br />
+			It needs to be accessible, but is purposefully hidden from the admin menu.
+		</p>
+
+		<?php
 	}
 
 	/**

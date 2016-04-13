@@ -8,7 +8,7 @@
 			ed.addButton('btnWebDAMAssetChooser',
 			{
 				title: 'Asset Chooser',
-				image: assetsUrl + '/webdam.png',
+				image: assetsUrl + '/webdam-icon.png',
 				cmd: 'showAssetChooser',
 				classes: 'widget btn btnWebDAMAssetChooser',
 				onclick: function() { }
