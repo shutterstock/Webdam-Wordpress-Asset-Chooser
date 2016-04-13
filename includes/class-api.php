@@ -76,6 +76,8 @@ class API {
 	/**
 	 * Object initialization
 	 *
+	 * This init only occurs once when the object is first created.
+	 *
 	 * @param null
 	 *
 	 * @return null
@@ -175,8 +177,8 @@ class API {
 	 *
 	 * After the user has been taken to WebDAM to allow access
 	 * they're redirected back to the settings page with a new
-	 * GET 'code' variable in place. This can then be used to
-	 * obtain an access_token.
+	 * GET 'code' query string variable in the URL. This 'code'
+	 * can then be used to obtain an access_token.
 	 *
 	 * @param null
 	 *
@@ -219,11 +221,12 @@ class API {
 	}
 
 	/**
-	 * Ensure we always have a cache of the WebDAM API
+	 * Ensure we always have a valid access_token
 	 *
-	 * If no cache is present, create an instance of the API
+	 * Fetch an access token when we don't yet have have one,
+	 * or if our current token is expired; refresh it.
 	 *
-	 * @param
+	 * @param null
 	 *
 	 * @return null
 	 */

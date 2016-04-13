@@ -56,7 +56,7 @@ class Asset_Chooser {
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
 			add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
-			add_action( 'wp_ajax_nopriv_webdam_get_api_response', array( $this, 'ajax_get_api_response' ) );
+			add_action( 'wp_ajax_nopriv_webdam_get_mock_api_response', array( $this, 'ajax_get_mock_api_response' ) );
 			add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 		}
 	}
@@ -101,11 +101,13 @@ class Asset_Chooser {
 	 * in the class-api.php:do_authentication() function, but uses
 	 * the access and refresh tokens we already have.
 	 *
+	 * @see get_current_api_response_url variable in action_admin_enqueue_scripts()
+	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	function ajax_get_api_response() {
+	function ajax_get_mock_api_response() {
 
 		$mock_api_response = array(
 			'access_token'  => webdam_get_current_access_token(),
@@ -163,7 +165,7 @@ class Asset_Chooser {
 			// Unfortunetly this information can't be passed in the iFrame URL
 			'get_current_api_response_url' => esc_url_raw( add_query_arg(
 				'action',
-				'webdam_get_api_response',
+				'webdam_get_mock_api_response',
 				admin_url( 'admin-ajax.php' )
 			) ),
 		);

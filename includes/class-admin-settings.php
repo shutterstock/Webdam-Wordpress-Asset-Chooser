@@ -49,7 +49,7 @@ class Admin {
 		}
 
 		// Create the Settings > Webdam page
-		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
+		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
 		add_action( 'update_option_webdam_settings', array( $this, 'update_option_webdam_settings' ) );
 
@@ -75,21 +75,27 @@ class Admin {
 
 		<div class="error">
 			<p>
-				<strong>
-					Please update the <a href="<?php echo esc_url( admin_url( 'options-general.php?page=webdam-settings' ) ) ?>">WebDAM Settings</a> with your information.
+				<strong><?php
+
+					printf(
+						wp_kses( __( 'Please update the <a href="%s">%s</a> with your information.', 'webdam' ) ),
+						esc_url( $this->settings_admin_page_url ),
+						esc_html_e( 'WebDAM Settings', 'webdam' )
+					); ?>
+
 				</strong>
 			</p>
 		</div><?php
 	}
 
 	/**
-	 * Create the settings page
+	 * Create the settings page(s)
 	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function add_plugin_page() {
+	public function action_admin_menu() {
 
 		// Create the 'WebDAM' Settings page
 		add_options_page(
@@ -197,9 +203,9 @@ class Admin {
 	public function create_set_cookie_page() { ?>
 
 		<p>
-			This page is used to set the WebDAM chosen asset cookie.
+			<?php esc_html_e( 'This page is used to set the WebDAM chosen asset cookie.', 'webdam' ); ?>
 			<br />
-			It needs to be accessible, but is purposefully hidden from the admin menu.
+			<?php esc_html_e( 'It needs to be accessible, but is purposefully hidden from the admin menu.', 'webdam' ); ?>
 		</p>
 
 		<?php
@@ -402,6 +408,7 @@ class Admin {
 
 	/**
 	 * Fires after the webdam_settings option is saved
+	 * using the core "update_option_{$option}" action
 	 *
 	 * @param mixed  $old_value The old option value.
 	 * @param mixed  $new_value The new option value.
