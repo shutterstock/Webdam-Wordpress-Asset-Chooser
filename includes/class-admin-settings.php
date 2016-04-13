@@ -39,6 +39,11 @@ class Admin {
 	 */
 	public function __construct() {
 
+		// Display a notice when credentials are needed
+		if ( ! \webdam_get_settings() ) {
+			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
+		}
+
 		// Create the Settings > Webdam page
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
@@ -46,50 +51,6 @@ class Admin {
 
 		// Enqueue styles and scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
-
-		// Display a notice when credentials are needed
-		if ( ! \webdam_get_settings() ) {
-			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
-		}
-	}
-
-	/**
-	 * Enqueue admin scripts and styles
-	 *
-	 * @param null
-	 *
-	 * @return null
-	 */
-	public function wp_enqueue_scripts() {
-
-		// Only enqueue these items on our settings pages
-		if ( ! empty( $_GET['page'] ) ) {
-
-			if ( 'webdam-settings' === $_GET['page'] ) {
-
-				// Enqueue the WebDAM admin settings CSS
-				wp_enqueue_style(
-					'webdam-admin-settings',
-					WEBDAM_PLUGIN_URL . 'assets/webdam-admin-settings.css',
-					array(),
-					false,
-					'screen'
-				);
-			}
-
-			if ( 'webdam-set-cookie' == $_GET['page'] ) {
-
-				// Enqueue the WebDAM cookie setting JavaScript
-				wp_enqueue_script(
-					'webdam-set-cookie',
-					WEBDAM_PLUGIN_URL . 'assets/webdam-set-cookie.js',
-					array(),
-					false,
-					true
-				);
-
-			}
-		}
 	}
 
 	/**
@@ -148,6 +109,45 @@ class Admin {
 
 		// Hide the admin set cookie page
 		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
+	}
+
+	/**
+	 * Enqueue admin scripts and styles
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	public function wp_enqueue_scripts() {
+
+		// Only enqueue these items on our settings pages
+		if ( ! empty( $_GET['page'] ) ) {
+
+			if ( 'webdam-settings' === $_GET['page'] ) {
+
+				// Enqueue the WebDAM admin settings CSS
+				wp_enqueue_style(
+					'webdam-admin-settings',
+					WEBDAM_PLUGIN_URL . 'assets/webdam-admin-settings.css',
+					array(),
+					false,
+					'screen'
+				);
+			}
+
+			if ( 'webdam-set-cookie' == $_GET['page'] ) {
+
+				// Enqueue the WebDAM cookie setting JavaScript
+				wp_enqueue_script(
+					'webdam-set-cookie',
+					WEBDAM_PLUGIN_URL . 'assets/webdam-set-cookie.js',
+					array(),
+					false,
+					true
+				);
+
+			}
+		}
 	}
 
 	/**
