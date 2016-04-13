@@ -335,6 +335,16 @@ class Admin {
 									name="webdam_settings[api_client_secret]"
 									value="<?php echo ! empty( $settings['api_client_secret'] ) ? esc_attr( $settings['api_client_secret'] ) : ''; ?>">
 							</td>
+						</tr><tr id="enable-sideloading-row">
+							<th scope="row"><?php esc_html_e( 'Save chosen assets in the Media Library', 'webdam' ); ?></th>
+							<td>
+								<input
+									type="checkbox"
+									id="enable-sideloading"
+									name="webdam_settings[enable_sideloading]"
+									value="1"
+									<?php isset( $settings['enable_sideloading'] ) ? checked( $settings['enable_sideloading'], 1 ) : ''; ?>>
+							</td>
 						</tr>
 					</tbody>
 				</table><?php
@@ -378,6 +388,10 @@ class Admin {
 		// Save the client secret
 		if( isset( $input['api_client_secret'] ) ) {
 			$new_settings['api_client_secret'] = sanitize_text_field( $input['api_client_secret'] );
+		}
+
+		if( isset( $input['enable_sideloading'] ) ) {
+			$new_settings['enable_sideloading'] = intval( $input['enable_sideloading'] );
 		}
 
 		// Determine what status message to display to the user
