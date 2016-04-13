@@ -48,7 +48,7 @@ class API {
 		if ( empty( static::$_instance ) || $refresh_cache ){
 
 			// Attempt to fetch a cache of the class instance
-			$instance = wp_cache_get( 'Webdam\API' );
+			$instance = get_transient( 'Webdam\API' );
 
 			if ( false === $instance || $refresh_cache ) {
 
@@ -57,7 +57,7 @@ class API {
 				$instance->_init();
 
 				// Cache the API instance
-				wp_cache_set( 'Webdam\API', $instance );
+				set_transient( 'Webdam\API', $instance );
 			} else {
 
 				// Cache is good
@@ -349,7 +349,7 @@ class API {
 			$this::$_instance = $this;
 
 			// Cache the API instance
-			wp_cache_set( 'Webdam\API', $this );
+			set_transient( 'Webdam\API', $this );
 
 		} else {
 			// Didn't get back what we expected
