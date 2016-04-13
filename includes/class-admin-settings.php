@@ -12,6 +12,10 @@ class Admin {
 	 */
 	private static $_instance;
 
+	private $admin_settings_page_url;
+
+	private $admin_set_cookie_page_url;
+
 	/**
 	 * Fetch THE instance of the admin object
 	 *
@@ -96,6 +100,12 @@ class Admin {
 			array( $this, 'create_settings_page' )
 		);
 
+		$this->admin_settings_page_url = add_query_arg(
+			'page',
+			'webdam-settings',
+			admin_url( 'options-general.php' )
+		);
+
 		// Create the soon-to-be hidden admin set cookie page
 		// This page is used to set the chosen asset cookie
 		// it needs to be accessible, but hidden from the admin menu
@@ -107,8 +117,32 @@ class Admin {
 			array( $this, 'create_set_cookie_page' )
 		);
 
+		$this->admin_set_cookie_page_url = add_query_arg(
+			'page',
+			'webdam-set-cookie',
+			admin_url( 'options-general.php' )
+		);
+
 		// Hide the admin set cookie page
 		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
+	}
+
+	/**
+	 * Getter function to obtain the admin settings page url
+	 *
+	 * @return string Unescaped url
+	 */
+	public function get_admin_settings_page_url() {
+		return $this->admin_settings_page_url;
+	}
+
+	/**
+	 * Getter function to obtain the admin settings page url
+	 *
+	 * @return string Unescaped url
+	 */
+	public function get_admin_set_cookie_page_url() {
+		return $this->admin_set_cookie_page_url;
 	}
 
 	/**

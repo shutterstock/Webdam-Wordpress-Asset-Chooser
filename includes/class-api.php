@@ -82,16 +82,18 @@ class API {
 	 */
 	public function _init() {
 
-		// The redirect URL points to the settings page
-		// created at \Webdam\Admin::add_plugin_page()
-		// So that after authenticating the user is redirected
-		// back to the settings page they initially started
-		// the authentication at.
-		$this->authorization_redirect_uri = add_query_arg(
-			'page',
-			'webdam-settings',
-			admin_url( 'options-general.php' )
-		);
+		// The settings page may display a link for the user to click
+		// and be taken to WebDAM's website to say "yes, this website
+		// is allowed to access my account", i.e. the user went through
+		// the 'authentication' process to 'authenticate' our application.
+		//
+		// After authenticating with WebDM the user is redirected
+		// back to our settings page where they initially began the
+		// authentication process.
+		//
+		// Create an internal reference to the settings page URL
+		// aka known as the authentication redirect URL.
+		$this->authorization_redirect_uri = webdam_get_admin_settings_page_url();
 
 		if ( $settings = webdam_get_settings() ) {
 

@@ -22,6 +22,30 @@ function webdam_get_site_protocol() {
 }
 
 /**
+ * Getter function to obtain the admin settings page url
+ *
+ * @return string Unescaped url
+ */
+function webdam_get_admin_settings_page_url() {
+
+	$settings = \Webdam\Admin::get_instance();
+
+	return $settings->get_admin_settings_page_url();
+}
+
+/**
+ * Getter function to obtain the admin set cookie page url
+ *
+ * @return string Unescaped url
+ */
+function webdam_get_admin_set_cookie_page_url() {
+
+	$settings = \Webdam\Admin::get_instance();
+
+	return $settings->get_admin_set_cookie_page_url();
+}
+
+/**
  * Check whether is it ok to load up plugin functionality or not.
  *
  * @param null

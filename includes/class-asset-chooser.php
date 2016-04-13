@@ -156,11 +156,7 @@ class Asset_Chooser {
 
 			// The return url is a hidden options page created in
 			// \Webdam\Admin::create_set_cookie_page()
-			'return_url' => esc_url_raw( add_query_arg(
-				'page',
-				'webdam-set-cookie',
-				admin_url( 'options-general.php' )
-			) ),
+			'return_url' => esc_url_raw( webdam_get_admin_set_cookie_page_url() ),
 
 			// The response URL is used by WebDAM to back-ping us
 			// for the API token to authenticate the asset chooser iFrame
