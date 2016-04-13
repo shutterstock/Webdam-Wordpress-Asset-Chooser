@@ -113,10 +113,10 @@ class Asset_Chooser {
 	function ajax_get_api_response() {
 
 		$mock_api_response = array(
-			'access_token' => webdam_get_current_access_token(),
-			'expires_in' => 3600,
-			'token_type' => 'bearer',
-			'scope' => null,
+			'access_token'  => webdam_get_current_access_token(),
+			'expires_in'    => 3600,
+			'token_type'    => 'bearer',
+			'scope'         => null,
 			'refresh_token' => webdam_get_current_refresh_token()
 		);
 
