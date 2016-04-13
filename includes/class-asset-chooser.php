@@ -45,26 +45,19 @@ class Asset_Chooser {
 	 */
 	public function __construct() {
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
-
 		add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
-
-		add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
-
-		add_action( 'wp_ajax_nopriv_webdam_get_api_response', array( $this, 'ajax_get_api_response' ) );
-
-		// Handle sideloading images from WebDAM
-		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 
 		//load up plugin functionality only if we have settings
 		// and if we are authenticated
 		if ( \webdam_get_settings() && \webdam_is_authenticated() ) {
 
+			add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
+			add_action( 'admin_print_scripts', array( $this, 'action_admin_print_scripts' ) );
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
-
-			// Load admin variable for the domain in the plugin
-			add_action( 'admin_enqueue_scripts', array( $this, 'plugin_load_plugin_vars' ) );
+			add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
+			add_action( 'wp_ajax_nopriv_webdam_get_api_response', array( $this, 'ajax_get_api_response' ) );
+			add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 		}
 	}
 
@@ -215,16 +208,13 @@ class Asset_Chooser {
 	}
 
 	/**
-	 * Enqueues the JS which loads the domain name
-	 *
-	 * @todo localize vars
-	 * @todo Move status markup into _ template
+	 * Render some HTML templates into the admin header for use by our JS
 	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function plugin_load_plugin_vars() {
+	public function action_admin_print_scripts() {
 
 		$screen = get_current_screen();
 
@@ -233,6 +223,7 @@ class Asset_Chooser {
 			return;
 		} ?>
 
+		<!-- The 'Importing your selection' popup -->
 		<div class="webdam-asset-chooser-status">
 			<div class="working">
 				<?php esc_html_e( 'Importing your WebDAM selection..', 'PMC' ); ?>
@@ -240,6 +231,8 @@ class Asset_Chooser {
 			</div>
 			<div class="done"></div>
 		</div>
+
+		<!-- The inserted [caption] and <img> inserted into content -->
 		<script type="text/template" id="webdam-insert-image-template">
 			[caption id="attachment_<%- attachment_id %>" align="alignnone" class="webdam-imported-asset"]<img class="size-full wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
 		</script>
