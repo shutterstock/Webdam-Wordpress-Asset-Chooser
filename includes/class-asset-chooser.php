@@ -43,7 +43,9 @@ class Asset_Chooser {
 	 *
 	 * @return null
 	 */
-	protected function __construct() {
+	public function __construct() {
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
 
@@ -126,6 +128,74 @@ class Asset_Chooser {
 	}
 
 	/**
+	 * Enqueue Admin scripts & styles
+	 */
+	public function action_admin_enqueue_scripts() {
+
+		$screen = get_current_screen();
+
+		// Only output the following <script> on edit/new post screens
+		if ( 'post' !== $screen->base ) {
+			return;
+		}
+
+		global $post;
+
+		// The following page elements use underscore's templating
+		// + The 'Importing your selection' popup
+		// + The [caption] and <img> elements inserted into the content
+		wp_enqueue_script( 'underscore' );
+
+		$settings = webdam_get_settings();
+
+		// Build the client webdam url
+		$domain_path = $settings['webdam_account_domain'];
+
+		if ( false === strpos( $domain_path, '://' ) ) {
+			$domain_path = webdam_get_site_protocol() . $domain_path;
+		}
+
+		// Send some PHP vars to JavaScript
+		$localized_variables = array(
+			'sideload_nonce' => wp_create_nonce( 'webdam_sideload_image' ),
+			'post_id' => $post->ID,
+			'asset_chooser_domain' => $domain_path,
+
+			// The return url is a hidden options page created in
+			// \Webdam\Admin::create_set_cookie_page()
+			'return_url' => esc_url_raw( add_query_arg(
+				'page',
+				'webdam-set-cookie',
+				admin_url( 'options-general.php' )
+			) ),
+
+			// The response URL is used by WebDAM to back-ping us
+			// for the API token to authenticate the asset chooser iFrame
+			// Unfortunetly this information can't be passed in the iFrame URL
+			'get_current_api_response_url' => esc_url_raw( add_query_arg(
+				'action',
+				'webdam_get_api_response',
+				admin_url( 'admin-ajax.php' )
+			) ),
+		);
+
+		// The main asset chooser js is loaded via TinyMCE
+		// as such, we're unable to use it for our localized vars handle
+		// Since we're using underscore we'll use that handle instead.
+		wp_localize_script( 'underscore', 'webdam', $localized_variables );
+
+		// The following CSS is used to style the asset chooser
+		// status popup which displays 'Importing your selection..'
+		wp_enqueue_style(
+			'webdam-chooser-styles',
+			WEBDAM_PLUGIN_URL . 'assets/webdam-asset-chooser.css',
+			array(),
+			false,
+			'screen'
+		);
+	}
+
+	/**
 	 * Enqueue any scripts or styles
 	 *
 	 * @param null
@@ -134,29 +204,14 @@ class Asset_Chooser {
 	 */
 	public function action_wp_enqueue_scripts() {
 
-		if ( is_admin() ) {
-
-			wp_enqueue_script( 'underscore' );
-
-			wp_enqueue_style(
-				'webdam-chooser-styles',
-				WEBDAM_PLUGIN_URL . 'assets/webdam-asset-chooser.css',
-				array(),
-				false,
-				'screen'
-			);
-
-		} else {
-
-			// Enqueue the webdam imported asset CSS
-			wp_enqueue_style(
-				'webdam-imported-asset',
-				WEBDAM_PLUGIN_URL . 'assets/webdam-imported-asset.css',
-				array(),
-				false,
-				'screen'
-			);
-		}
+		// Enqueue the webdam imported asset CSS
+		wp_enqueue_style(
+			'webdam-imported-asset',
+			WEBDAM_PLUGIN_URL . 'assets/webdam-imported-asset.css',
+			array(),
+			false,
+			'screen'
+		);
 	}
 
 	/**
@@ -171,32 +226,12 @@ class Asset_Chooser {
 	 */
 	public function plugin_load_plugin_vars() {
 
-		global $post;
-
 		$screen = get_current_screen();
 
 		// Only output the following <script> on edit/new post screens
 		if ( 'post' !== $screen->base ) {
 			return;
-		}
-
-		$settings = webdam_get_settings();
-
-		// Build the client webdam url
-		$domain_path = $settings['webdam_account_domain'];
-
-		if ( false === strpos( $domain_path, '://' ) ) {
-			$domain_path = webdam_get_site_protocol() . $domain_path;
-		}
-
-		// The return url is a hidden options page created in
-		// \Webdam\Admin::create_set_cookie_page()
-		$return_url = add_query_arg(
-			'page',
-			'webdam-set-cookie',
-			admin_url( 'options-general.php' )
-		);
-		?>
+		} ?>
 
 		<div class="webdam-asset-chooser-status">
 			<div class="working">
@@ -207,13 +242,6 @@ class Asset_Chooser {
 		</div>
 		<script type="text/template" id="webdam-insert-image-template">
 			[caption id="attachment_<%- attachment_id %>" align="alignnone" class="webdam-imported-asset"]<img class="size-full wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
-		</script>
-		<script type="text/javascript">
-			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
-			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
-			var asset_chooser_domain = <?php echo wp_json_encode( $domain_path ); ?>;
-			var webdam_return_url = <?php echo wp_json_encode( esc_url_raw( $return_url ) ); ?>;
-			var webdam_get_current_api_response_url = <?php echo wp_json_encode( add_query_arg( 'action', 'webdam_get_api_response', admin_url( 'admin-ajax.php' ) ) ); ?>;
 		</script>
 		<?php
 	}

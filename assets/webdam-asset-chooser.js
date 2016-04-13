@@ -1,4 +1,4 @@
-/* global ajaxurl, post_id, webdam_sideload_nonce */
+/* global ajaxurl, webdam */
 ( function( $ ) {
 	tinymce.create('tinymce.plugins.WebDAMAssetChooser', {
 		init: function(ed, assetsUrl) {
@@ -19,7 +19,7 @@
 
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
-					url: asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(webdam_return_url) + '&tokenpath=' + encodeURIComponent(webdam_get_current_api_response_url) + '&params=' + encodeURIComponent(JSON.stringify(params)),
+					url: webdam.asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(webdam.return_url) + '&tokenpath=' + encodeURIComponent(webdam.get_current_api_response_url) + '&params=' + encodeURIComponent(JSON.stringify(params)),
 
 					width: 940,
 					height: 600,
@@ -30,7 +30,7 @@
 
 				// also initiate the method that checks cookie and inserts the image when set
 				var mainInterval = window.setInterval(function() {
-					var webDAMHTMLPath = asset_chooser_domain;
+					var webDAMHTMLPath = webdam.asset_chooser_domain;
 					var re = new RegExp("widgetEmbedValue=([^;]+)");
 					var value = re.exec(document.cookie);
 					var currentCookieValue = (value != null) ? unescape(value[1]) : null;
@@ -54,8 +54,8 @@
 									ajaxurl,
 									{
 										action: 'pmc-webdam-sideload-image',
-										nonce: webdam_sideload_nonce,
-										post_id: post_id,
+										nonce: webdam.sideload_nonce,
+										post_id: webdam.post_id,
 										webdam_asset_id: returnedImage.id,
 										webdam_asset_url: returnedImage.url,
 										webdam_asset_filename: returnedImage.filename
