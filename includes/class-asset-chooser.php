@@ -80,7 +80,11 @@ class Asset_Chooser {
 
 		$settings = webdam_get_settings();
 
-		$allowed_origins[] = webdam_get_site_protocol() . $settings['webdam_account_domain'];
+		if ( ! empty( $settings['webdam_account_domain'] ) ) {
+
+			$allowed_origins[] = webdam_get_site_protocol() . $settings['webdam_account_domain'];
+
+		}
 
 		return $allowed_origins;
 	}
@@ -136,46 +140,53 @@ class Asset_Chooser {
 
 		global $post;
 
-		// The following page elements use underscore's templating
-		// + The 'Importing your selection' popup
-		// + The [caption] and <img> elements inserted into the content
+		// The [caption] and <img> elements inserted into the content
+		// utilize underscore's templating
 		wp_enqueue_script( 'underscore' );
 
-		$settings = webdam_get_settings();
+		$localized_variables = array();
 
-		// Build the client webdam url
-		$domain_path = $settings['webdam_account_domain'];
+		if ( $settings = webdam_get_settings() ) {
 
-		if ( false === strpos( $domain_path, '://' ) ) {
-			$domain_path = webdam_get_site_protocol() . $domain_path;
-		}
+			// Build the client webdam url
+			$domain_path = '';
 
-		// Send some PHP vars to JavaScript
-		$localized_variables = array(
-			'post_id' => $post->ID,
-			'asset_chooser_domain' => $domain_path,
+			if ( ! empty( $settings['webdam_account_domain'] ) ) {
 
-			// The return url is a hidden options page created in
-			// \Webdam\Admin::create_set_cookie_page()
-			'return_url' => esc_url_raw( webdam_get_admin_set_cookie_page_url() ),
+				$domain_path = $settings['webdam_account_domain'];
 
-			// The response URL is used by WebDAM to back-ping us
-			// for the API token to authenticate the asset chooser iFrame
-			// Unfortunetly this information can't be passed in the iFrame URL
-			'get_current_api_response_url' => esc_url_raw( add_query_arg(
-				'action',
-				'webdam_get_mock_api_response',
-				admin_url( 'admin-ajax.php' )
-			) ),
-		);
+				if ( false === strpos( $domain_path, '://' ) ) {
+					$domain_path = webdam_get_site_protocol() . $domain_path;
+				}
+			}
 
-		// If sideloading is enabled note that in the localized
-		// data and include a nonce for that sideloading functionality
-		if ( ! empty( $settings['enable_sideloading'] ) ) {
+			// Send some PHP vars to JavaScript
+			$localized_variables = array(
+				'post_id' => $post->ID,
+				'asset_chooser_domain' => $domain_path,
 
-			$localized_variables['enable_sideloading'] = 1;
-			$localized_variables['sideload_nonce'] = wp_create_nonce( 'webdam_sideload_image' );
+				// The return url is a hidden options page created in
+				// \Webdam\Admin::create_set_cookie_page()
+				'return_url' => esc_url_raw( webdam_get_admin_set_cookie_page_url() ),
 
+				// The response URL is used by WebDAM to back-ping us
+				// for the API token to authenticate the asset chooser iFrame
+				// Unfortunetly this information can't be passed in the iFrame URL
+				'get_current_api_response_url' => esc_url_raw( add_query_arg(
+					'action',
+					'webdam_get_mock_api_response',
+					admin_url( 'admin-ajax.php' )
+				) ),
+			);
+
+			// If sideloading is enabled note that in the localized
+			// data and include a nonce for that sideloading functionality
+			if ( ! empty( $settings['enable_sideloading'] ) ) {
+
+				$localized_variables['enable_sideloading'] = 1;
+				$localized_variables['sideload_nonce'] = wp_create_nonce( 'webdam_sideload_image' );
+
+			}
 		}
 
 		// The main asset chooser js is loaded via TinyMCE

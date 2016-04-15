@@ -46,27 +46,21 @@ function webdam_get_admin_set_cookie_page_url() {
 }
 
 /**
- * Check whether is it ok to load up plugin functionality or not.
+ * Get the WebDAM settings from the options table
  *
  * @param null
  *
- * @return boolean Returns TRUE if its ok to load up plugin functionality else FALSE
+ * @return array|false Array of settings values if available, false otherwise
  */
 function webdam_get_settings() {
 
 	$settings = get_option( 'webdam_settings' );
 
-	//@todo better way to verify that we have good settings
-
-	if ( ! empty( $settings ) && is_array( $settings ) ) {
-		if ( ! empty( $settings['webdam_account_domain'] ) && ! empty( $settings['api_client_id'] ) && ! empty( $settings['api_client_id'] ) ) {
-
-			return $settings;
-
-		}
+	if ( null !== $settings ) {
+		return $settings;
+	} else {
+		return false;
 	}
-
-	return false;
 }
 
 /**
