@@ -129,7 +129,7 @@ class Asset_Chooser {
 
 		$screen = get_current_screen();
 
-		// Only output the following <script> on edit/new post screens
+		// Only enqueue/localize the following items on edit/new post screens
 		if ( 'post' !== $screen->base ) {
 			return;
 		}
@@ -152,7 +152,6 @@ class Asset_Chooser {
 
 		// Send some PHP vars to JavaScript
 		$localized_variables = array(
-			'sideload_nonce' => wp_create_nonce( 'webdam_sideload_image' ),
 			'post_id' => $post->ID,
 			'asset_chooser_domain' => $domain_path,
 
@@ -169,6 +168,15 @@ class Asset_Chooser {
 				admin_url( 'admin-ajax.php' )
 			) ),
 		);
+
+		// If sideloading is enabled note that in the localized
+		// data and include a nonce for that sideloading functionality
+		if ( ! empty( $settings['enable_sideloading'] ) ) {
+
+			$localized_variables['enable_sideloading'] = 1;
+			$localized_variables['sideload_nonce'] = wp_create_nonce( 'webdam_sideload_image' );
+
+		}
 
 		// The main asset chooser js is loaded via TinyMCE
 		// as such, we're unable to use it for our localized vars handle

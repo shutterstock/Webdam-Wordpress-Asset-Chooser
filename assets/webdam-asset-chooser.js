@@ -44,39 +44,46 @@
 						if (returnedImage.embedType != 'dismiss') {
 							if (returnedImage.embedType == 'preview') {
 
-								// Display waiting animation
-								$( '.webdam-asset-chooser-status' ).addClass( 'visible' );
+								if ( 'undefined' != typeof webdam.enable_sideloading && 1 == webdam.enable_sideloading ) {
+									// Display waiting animation
+									$( '.webdam-asset-chooser-status' ).addClass( 'visible' );
 
-								// POST the image URL to the server via AJAX
-								// Server side—sideload the image into our media library
-								// embed the copied version of the image (from our ML)
-								$.post(
-									ajaxurl,
-									{
-										action: 'pmc-webdam-sideload-image',
-										nonce: webdam.sideload_nonce,
-										post_id: webdam.post_id,
-										webdam_asset_id: returnedImage.id,
-										webdam_asset_url: returnedImage.url,
-										webdam_asset_filename: returnedImage.filename
-									},
-									function( response ) {
+									// POST the image URL to the server via AJAX
+									// Server side—sideload the image into our media library
+									// embed the copied version of the image (from our ML)
+									$.post(
+										ajaxurl,
+										{
+											action: 'pmc-webdam-sideload-image',
+											nonce: webdam.sideload_nonce,
+											post_id: webdam.post_id,
+											webdam_asset_id: returnedImage.id,
+											webdam_asset_url: returnedImage.url,
+											webdam_asset_filename: returnedImage.filename
+										},
+										function( response ) {
 
-										if ( response.success ) {
+											if ( response.success ) {
 
-											var image_template = _.template( $( 'script#webdam-insert-image-template' ).html() );
+												var image_template = _.template( $( 'script#webdam-insert-image-template' ).html() );
 
-											ed.execCommand( 'mceInsertContent', 0, image_template( response.data ) );
+												ed.execCommand( 'mceInsertContent', 0, image_template( response.data ) );
 
+											}
+
+											// Hide waiting animation
+											$( '.webdam-asset-chooser-status' ).removeClass( 'visible' );
+
+											// Close the WebDAM modal window
+											windowReference.close();
 										}
+									);
+								} else {
+									ed.execCommand( 'mceInsertContent', 0, '<img src="' + returnedImage.url + '" alt="' + returnedImage.filename + '" />' );
 
-										// Hide waiting animation
-										$( '.webdam-asset-chooser-status' ).removeClass( 'visible' );
-
-										// Close the WebDAM modal window
-										windowReference.close();
-									}
-								);
+									// Close the WebDAM modal window
+									windowReference.close();
+								}
 							} else {
 								var textLink = prompt('Please enter the label of your link', returnedImage.filename);
 
