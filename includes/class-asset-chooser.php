@@ -218,13 +218,20 @@ class Asset_Chooser {
 	public function action_wp_enqueue_scripts() {
 
 		// Enqueue the webdam imported asset CSS
-		wp_enqueue_style(
-			'webdam-imported-asset',
-			WEBDAM_PLUGIN_URL . 'assets/webdam-imported-asset.css',
-			array(),
-			false,
-			'screen'
-		);
+		// This CSS is used to style the imported assets on the frontend
+
+		// Allow this CSS to be optional
+		$enqueue_frontend_css = apply_filters( 'webdam-frontend-css', 1 );
+
+		if ( $enqueue_frontend_css ) {
+			wp_enqueue_style(
+				'webdam-imported-asset',
+				WEBDAM_PLUGIN_URL . 'assets/webdam-imported-asset.css',
+				array(),
+				false,
+				'screen'
+			);
+		}
 	}
 
 	/**
