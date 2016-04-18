@@ -4,8 +4,6 @@ namespace Webdam;
 
 /**
  * Plugin Core
- *
- * @todo add update routine
  */
 class Core {
 

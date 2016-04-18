@@ -43,7 +43,7 @@ class Admin {
 	 */
 	public function __construct() {
 
-		// Display a notice when credentials are needed
+		// Display a notice when WebDAM settings are needed
 		if ( ! \webdam_get_settings() ) {
 			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
 		}
@@ -288,9 +288,7 @@ class Admin {
 								// Display link to authenticate if needed
 								if ( \webdam_is_authenticated() ) {
 
-									// @todo button to manually refresh token?
-
-									// @todo button to test API?
+									// API is authentication—good to go
 
 								} else {
 									// Once we have client_id/secret show the api auth_code link
@@ -371,10 +369,6 @@ class Admin {
 		$response_type = 'updated';
 		$response_message = '';
 
-		// @todo encrypt the piss outta this stuff for storage
-		// ...but in a way we can still retrieve values for sending auth
-		// to webdam in the api.
-
 		// Save the domain
 		if( isset( $input['webdam_account_domain'] ) ) {
 			$new_settings['webdam_account_domain'] = sanitize_text_field( $input['webdam_account_domain'] );
@@ -390,6 +384,7 @@ class Admin {
 			$new_settings['api_client_secret'] = sanitize_text_field( $input['api_client_secret'] );
 		}
 
+		// Save the sideloading preference
 		if( isset( $input['enable_sideloading'] ) ) {
 			$new_settings['enable_sideloading'] = intval( $input['enable_sideloading'] );
 		}

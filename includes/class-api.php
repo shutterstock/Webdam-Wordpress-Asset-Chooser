@@ -109,9 +109,6 @@ class API {
 				$this->setup_hooks();
 			}
 		}
-
-		// no settings
-		return;
 	}
 
 	/**
@@ -122,8 +119,17 @@ class API {
 	 * @return null
 	 */
 	public function setup_hooks() {
+
+		// Capture the auth code when it's available
+		// This occurs after someone has been directed to
+		// webdam to authorize this app's usage and they're
+		// returned to our site with the auth code in the url
 		add_action( 'admin_init', array( $this, 'capture_authorization_code' ), 0, 10 );
+
+		// Ensure we always have valid authentication
 		add_action( 'admin_init', array( $this, 'ensure_were_authenticated' ), 0, 11 );
+
+		// Update the api cache when new settings have been saved
 		add_action( 'webdam-saved-new-settings', array( $this, 'refresh_api_cache' ) );
 	}
 
@@ -131,6 +137,8 @@ class API {
 	 * Refresh this classes instance cache
 	 *
 	 * @internal Called via action: webdam-saved-new-settings
+	 *           which fires when the webdam admin settings
+	 *           have been saved.
 	 *
 	 * @param null
 	 *
@@ -232,10 +240,6 @@ class API {
 	 */
 	public function ensure_were_authenticated() {
 
-		// For debugging — change to true to force a new token on page load
-		// @todo the force new token should only perform a token refresh
-		$force_new_token = false;
-
 		if ( empty( $this->access_token ) ) {
 
 			// Only send an authentication request if we have an authorization code
@@ -243,11 +247,6 @@ class API {
 
 				// Do the authentication/fetch an access token
 				$token_request = $this->do_authentication( $this->grant_type );
-
-				if ( empty( $token_request['data']->access_token ) ) {
-					// there was an error
-					// @todo surface the error
-				}
 			}
 
 		} else {
@@ -257,9 +256,6 @@ class API {
 
 				// Refresh token
 				$this->do_authentication( 'refresh_token' );
-			} else {
-				// @todo do something when this is false
-				// notice that something is wrong?
 			}
 
 			// We're authenticated — nothing else needed here.
@@ -419,8 +415,6 @@ class API {
 			$this->ensure_were_authenticated();
 		}
 
-		// @todo setup default args
-
 		$args = array(
 			'body' => $data,
 		);
@@ -464,7 +458,6 @@ class API {
 		$url = $this->base_url . $endpoint;
 
 		// GET a response for the given url
-		// @todo verify token and type
 		$response = wp_safe_remote_get(
 			$url,
 			array(
