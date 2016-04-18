@@ -54,7 +54,6 @@ class API {
 
 				// No cache available—let's create one
 				$instance = new self();
-				$instance->_init();
 
 				// Cache the API instance
 				set_transient( 'Webdam\API', $instance );
@@ -62,8 +61,8 @@ class API {
 
 				// Cache is good
 				// Call anything which MUST execute on each request, e.g. WordPress hooks
-				// This is also called when _init() runs during an initial instantiation
-				$instance->setup_hooks();
+				// This is also called when __construct() runs during an initial instantiation
+				$instance->init();
 			}
 
 			self::$_instance = $instance;
@@ -76,13 +75,13 @@ class API {
 	/**
 	 * Object initialization
 	 *
-	 * This init only occurs once when the object is first created.
+	 * This construct only occurs once when the object is first created.
 	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function _init() {
+	public function __construct() {
 
 		// The settings page may display a link for the user to click
 		// and be taken to WebDAM's website to say "yes, this website
@@ -106,9 +105,22 @@ class API {
 				$this->client_id = $settings['api_client_id'];
 				$this->client_secret = $settings['api_client_secret'];
 
-				$this->setup_hooks();
+				$this->init();
 			}
 		}
+	}
+
+	/**
+	 * Object initializations
+	 *
+	 * This function runs on every admin page request
+	 */
+	public function init() {
+
+		// Hook into WordPress—this must occur on every page load,
+		// unlike this object, hooks are not persistent and must be
+		// specified on every run of PHP.
+		$this->setup_hooks();
 	}
 
 	/**
@@ -525,6 +537,9 @@ class API {
 	}
 }
 
-API::get_instance();
+// The API is only used in the admin
+if ( is_admin() ) {
+	API::get_instance();
+}
 
 // EOF
