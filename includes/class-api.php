@@ -134,7 +134,7 @@ class API {
 
 		// Capture the auth code when it's available
 		// This occurs after someone has been directed to
-		// webdam to authorize this app's usage and they're
+		// WebDAM to authorize this app's usage and they're
 		// returned to our site with the auth code in the url
 		add_action( 'admin_init', array( $this, 'capture_authorization_code' ), 0, 10 );
 
@@ -439,8 +439,18 @@ class API {
 
 		$url = $this->base_url . $endpoint;
 
+		// Allow the post URL to be filtered
+		$url = apply_filters( 'webdam-pre-post-url', $url );
+
+		// Allow the post args to be filtered
+		$args = apply_filters( 'webdam-pre-post-args', $args );
+
 		// POST the request to the given url
 		$response = wp_safe_remote_post( $url, $args );
+
+		// Broadcast the raw get response
+		do_action( 'webdam-get-response', $response );
+
 		$response['body'] = json_decode( $response['body'] );
 
 		// Handle the response and return
@@ -469,15 +479,23 @@ class API {
 
 		$url = $this->base_url . $endpoint;
 
-		// GET a response for the given url
-		$response = wp_safe_remote_get(
-			$url,
-			array(
-				'headers' => array(
-					'Authorization' => $this->access_token_type . ' ' . $this->access_token,
-				),
-			)
+		// Allow the GET request URL to be filtered
+		$url = apply_filters( 'webdam-pre-get-url', $url );
+
+		$args = array(
+			'headers' => array(
+				'Authorization' => $this->access_token_type . ' ' . $this->access_token,
+			),
 		);
+
+		// Allow the GET request args to be filtered
+		$args = apply_filters( 'webdam-pre-get-args', $args );
+
+		// GET a response for the given url
+		$response = wp_safe_remote_get( $url, $args );
+
+		// Broadcast the raw post response
+		do_action( 'webdam-post-response', $response );
 
 		$response['body'] = json_decode( $response['body'] );
 

@@ -189,6 +189,9 @@ class Asset_Chooser {
 			}
 		}
 
+		// Allow the localized variables to be filtered
+		$localized_variables = apply_filters( 'webdam-asset-chooser-localized-vars', $localized_variables );
+
 		// The main asset chooser js is loaded via TinyMCE
 		// as such, we're unable to use it for our localized vars handle
 		// Since we're using underscore we'll use that handle instead.
@@ -316,9 +319,9 @@ class Asset_Chooser {
 		$webdam_asset_id  = (int) $_POST['webdam_asset_id'];
 		$webdam_asset_url = esc_url_raw( $_POST['webdam_asset_url'] );
 		$webdam_asset_filename = sanitize_file_name( $_POST['webdam_asset_filename'] );
-
-		// Adjust the remote image url so we receive the largest image possible
-		$webdam_asset_url = str_replace( 'md_', '1280_', $webdam_asset_url );
+		
+		// Allow the asset url to be filtered when sideloading
+		$webdam_asset_url = apply_filters( 'webdam-sideload-asset-url', $webdam_asset_url );
 
 		// Hook into add_attachment so we can obtain the sideloaded image ID
 		// media_sideload_image does not return the ID, which sucks.
@@ -334,6 +337,9 @@ class Asset_Chooser {
 		// We don't need this any longer—let's ditch it.
 		delete_post_meta( $post_id, 'webdam_attachment_id_tmp' );
 
+		// Broadcast the new attachment ID
+		do_action( 'webdam-sideload-attachment-id', $attachment_id );
+
 		// Grab the current image metadata
 		$wordpress_image_meta = wp_get_attachment_metadata( $attachment_id );
 
@@ -343,6 +349,9 @@ class Asset_Chooser {
 		// and fetch what's needed, but the likelihood of images with data
 		// is slim, and depends on the photographer.
 		$webdam_image_meta = \webdam_get_asset_metadata( $webdam_asset_id );
+
+		// Allow the raw sideloaded asset meta to be filtered
+		$webdam_image_meta = apply_filters( 'webdam-sideload-asset-meta', $webdam_image_meta );
 
 		// Set the initial alttext
 		$post_alttext = '';
@@ -370,12 +379,17 @@ class Asset_Chooser {
 			}
 
 			// Set the attachment post attributes
-			wp_update_post( array(
+			$attachment_data = array(
 				'ID'           => $attachment_id,
 				'post_title'   => $post_title,
 				'post_content' => $post_content,
 				'post_excerpt' => $post_excerpt,
-			) );
+			);
+
+			// Allow the sideloaded attachment data to be filtered
+			$attachment_data = apply_filters( 'webdam-sideload-attachment-data', $attachment_data );
+
+			wp_update_post( $attachment_data );
 
 			// Set the attachment post meta values
 			$attachment_post_metas = array(
@@ -384,6 +398,9 @@ class Asset_Chooser {
 				'_webdam_asset_id'         => $webdam_asset_id,
 				'_webdam_asset_filename'   => $webdam_asset_filename,
 			);
+
+			// Allow the sideloaded attachment post meta to be filtered
+			$attachment_post_metas = apply_filters( 'webdam-sideload-attachment-post-meta', $attachment_post_metas );
 
 			foreach ( $attachment_post_metas as $meta_key => $meta_value ) {
 				update_post_meta( $attachment_id, $meta_key, $meta_value );
@@ -400,6 +417,9 @@ class Asset_Chooser {
 				$wordpress_image_meta['image_data'] = (array) $webdam_image_meta;
 
 			}
+
+			// Allow the WordPress image meta to be filtered before saving
+			$wordpress_image_meta = apply_filters( 'webdam-sideload-attachment-meta', $wordpress_image_meta );
 
 			// Update the metadata stored for the image by WordPress
 			wp_update_attachment_metadata(
