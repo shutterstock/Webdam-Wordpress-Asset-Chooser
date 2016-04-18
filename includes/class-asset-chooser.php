@@ -243,6 +243,8 @@ class Asset_Chooser {
 	 */
 	public function action_admin_print_scripts() {
 
+		$settings = webdam_get_settings();
+
 		$screen = get_current_screen();
 
 		// Only output the following <script> on edit/new post screens
@@ -259,10 +261,18 @@ class Asset_Chooser {
 			<div class="done"></div>
 		</div>
 
-		<!-- The inserted [caption] and <img> inserted into content -->
+		<?php if ( ! empty( $settings['enable_sideloading'] ) ) : ?>
+
+		<!--
+			The inserted [caption] and <img> inserted into content.
+			This template is only used when assets are sideloaded.
+		-->
 		<script type="text/template" id="webdam-insert-image-template">
 			[caption id="attachment_<%- attachment_id %>" align="alignnone" class="webdam-imported-asset"]<img class="size-full wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
 		</script>
+
+		<?php endif; ?>
+
 		<?php
 	}
 
