@@ -48,22 +48,21 @@ class API {
 		if ( empty( static::$_instance ) || $refresh_cache ){
 
 			// Attempt to fetch a cache of the class instance
-			$instance = wp_cache_get( 'Webdam\API' );
+			$instance = get_transient( 'Webdam\API' );
 
 			if ( false === $instance || $refresh_cache ) {
 
 				// No cache available—let's create one
 				$instance = new self();
-				$instance->_init();
 
 				// Cache the API instance
-				wp_cache_set( 'Webdam\API', $instance );
+				set_transient( 'Webdam\API', $instance );
 			} else {
 
 				// Cache is good
 				// Call anything which MUST execute on each request, e.g. WordPress hooks
-				// This is also called when _init() runs during an initial instantiation
-				$instance->setup_hooks();
+				// This is also called when __construct() runs during an initial instantiation
+				$instance->init();
 			}
 
 			self::$_instance = $instance;
@@ -76,22 +75,26 @@ class API {
 	/**
 	 * Object initialization
 	 *
+	 * This construct only occurs once when the object is first created.
+	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function _init() {
+	public function __construct() {
 
-		// The redirect URL points to the settings page
-		// created at \Webdam\Admin::add_plugin_page()
-		// So that after authenticating the user is redirected
-		// back to the settings page they initially started
-		// the authentication at.
-		$this->authorization_redirect_uri = add_query_arg(
-			'page',
-			'webdam-settings',
-			admin_url( 'options-general.php' )
-		);
+		// The settings page may display a link for the user to click
+		// and be taken to WebDAM's website to say "yes, this website
+		// is allowed to access my account", i.e. the user went through
+		// the 'authentication' process to 'authenticate' our application.
+		//
+		// After authenticating with WebDM the user is redirected
+		// back to our settings page where they initially began the
+		// authentication process.
+		//
+		// Create an internal reference to the settings page URL
+		// aka known as the authentication redirect URL.
+		$this->authorization_redirect_uri = webdam_get_admin_settings_page_url();
 
 		if ( $settings = webdam_get_settings() ) {
 
@@ -102,12 +105,22 @@ class API {
 				$this->client_id = $settings['api_client_id'];
 				$this->client_secret = $settings['api_client_secret'];
 
-				$this->setup_hooks();
+				$this->init();
 			}
 		}
+	}
 
-		// no settings
-		return;
+	/**
+	 * Object initializations
+	 *
+	 * This function runs on every admin page request
+	 */
+	public function init() {
+
+		// Hook into WordPress—this must occur on every page load,
+		// unlike this object, hooks are not persistent and must be
+		// specified on every run of PHP.
+		$this->setup_hooks();
 	}
 
 	/**
@@ -118,8 +131,17 @@ class API {
 	 * @return null
 	 */
 	public function setup_hooks() {
+
+		// Capture the auth code when it's available
+		// This occurs after someone has been directed to
+		// WebDAM to authorize this app's usage and they're
+		// returned to our site with the auth code in the url
 		add_action( 'admin_init', array( $this, 'capture_authorization_code' ), 0, 10 );
+
+		// Ensure we always have valid authentication
 		add_action( 'admin_init', array( $this, 'ensure_were_authenticated' ), 0, 11 );
+
+		// Update the api cache when new settings have been saved
 		add_action( 'webdam-saved-new-settings', array( $this, 'refresh_api_cache' ) );
 	}
 
@@ -127,6 +149,8 @@ class API {
 	 * Refresh this classes instance cache
 	 *
 	 * @internal Called via action: webdam-saved-new-settings
+	 *           which fires when the webdam admin settings
+	 *           have been saved.
 	 *
 	 * @param null
 	 *
@@ -173,8 +197,8 @@ class API {
 	 *
 	 * After the user has been taken to WebDAM to allow access
 	 * they're redirected back to the settings page with a new
-	 * GET 'code' variable in place. This can then be used to
-	 * obtain an access_token.
+	 * GET 'code' query string variable in the URL. This 'code'
+	 * can then be used to obtain an access_token.
 	 *
 	 * @param null
 	 *
@@ -217,19 +241,16 @@ class API {
 	}
 
 	/**
-	 * Ensure we always have a cache of the WebDAM API
+	 * Ensure we always have a valid access_token
 	 *
-	 * If no cache is present, create an instance of the API
+	 * Fetch an access token when we don't yet have have one,
+	 * or if our current token is expired; refresh it.
 	 *
-	 * @param
+	 * @param null
 	 *
 	 * @return null
 	 */
 	public function ensure_were_authenticated() {
-
-		// For debugging — change to true to force a new token on page load
-		// @todo the force new token should only perform a token refresh
-		$force_new_token = false;
 
 		if ( empty( $this->access_token ) ) {
 
@@ -238,11 +259,6 @@ class API {
 
 				// Do the authentication/fetch an access token
 				$token_request = $this->do_authentication( $this->grant_type );
-
-				if ( empty( $token_request['data']->access_token ) ) {
-					// there was an error
-					// @todo surface the error
-				}
 			}
 
 		} else {
@@ -252,9 +268,6 @@ class API {
 
 				// Refresh token
 				$this->do_authentication( 'refresh_token' );
-			} else {
-				// @todo do something when this is false
-				// notice that something is wrong?
 			}
 
 			// We're authenticated — nothing else needed here.
@@ -349,7 +362,7 @@ class API {
 			$this::$_instance = $this;
 
 			// Cache the API instance
-			wp_cache_set( 'Webdam\API', $this );
+			set_transient( 'Webdam\API', $this );
 
 		} else {
 			// Didn't get back what we expected
@@ -414,8 +427,6 @@ class API {
 			$this->ensure_were_authenticated();
 		}
 
-		// @todo setup default args
-
 		$args = array(
 			'body' => $data,
 		);
@@ -428,8 +439,18 @@ class API {
 
 		$url = $this->base_url . $endpoint;
 
+		// Allow the post URL to be filtered
+		$url = apply_filters( 'webdam-pre-post-url', $url );
+
+		// Allow the post args to be filtered
+		$args = apply_filters( 'webdam-pre-post-args', $args );
+
 		// POST the request to the given url
 		$response = wp_safe_remote_post( $url, $args );
+
+		// Broadcast the raw get response
+		do_action( 'webdam-get-response', $response );
+
 		$response['body'] = json_decode( $response['body'] );
 
 		// Handle the response and return
@@ -458,16 +479,23 @@ class API {
 
 		$url = $this->base_url . $endpoint;
 
-		// GET a response for the given url
-		// @todo verify token and type
-		$response = wp_safe_remote_get(
-			$url,
-			array(
-				'headers' => array(
-					'Authorization' => $this->access_token_type . ' ' . $this->access_token,
-				),
-			)
+		// Allow the GET request URL to be filtered
+		$url = apply_filters( 'webdam-pre-get-url', $url );
+
+		$args = array(
+			'headers' => array(
+				'Authorization' => $this->access_token_type . ' ' . $this->access_token,
+			),
 		);
+
+		// Allow the GET request args to be filtered
+		$args = apply_filters( 'webdam-pre-get-args', $args );
+
+		// GET a response for the given url
+		$response = wp_safe_remote_get( $url, $args );
+
+		// Broadcast the raw post response
+		do_action( 'webdam-post-response', $response );
 
 		$response['body'] = json_decode( $response['body'] );
 
@@ -527,6 +555,9 @@ class API {
 	}
 }
 
-API::get_instance();
+// The API is only used in the admin
+if ( is_admin() ) {
+	API::get_instance();
+}
 
 // EOF

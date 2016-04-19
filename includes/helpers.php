@@ -22,27 +22,45 @@ function webdam_get_site_protocol() {
 }
 
 /**
- * Check whether is it ok to load up plugin functionality or not.
+ * Getter function to obtain the admin settings page url
+ *
+ * @return string Unescaped url
+ */
+function webdam_get_admin_settings_page_url() {
+
+	$settings = \Webdam\Admin::get_instance();
+
+	return $settings->get_admin_settings_page_url();
+}
+
+/**
+ * Getter function to obtain the admin set cookie page url
+ *
+ * @return string Unescaped url
+ */
+function webdam_get_admin_set_cookie_page_url() {
+
+	$settings = \Webdam\Admin::get_instance();
+
+	return $settings->get_admin_set_cookie_page_url();
+}
+
+/**
+ * Get the WebDAM settings from the options table
  *
  * @param null
  *
- * @return boolean Returns TRUE if its ok to load up plugin functionality else FALSE
+ * @return array|false Array of settings values if available, false otherwise
  */
 function webdam_get_settings() {
 
 	$settings = get_option( 'webdam_settings' );
 
-	//@todo better way to verify that we have good settings
-
-	if ( ! empty( $settings ) && is_array( $settings ) ) {
-		if ( ! empty( $settings['webdam_account_domain'] ) && ! empty( $settings['api_client_id'] ) && ! empty( $settings['api_client_id'] ) ) {
-
-			return $settings;
-
-		}
+	if ( null !== $settings ) {
+		return $settings;
+	} else {
+		return false;
 	}
-
-	return false;
 }
 
 /**
