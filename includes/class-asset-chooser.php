@@ -43,26 +43,21 @@ class Asset_Chooser {
 	 *
 	 * @return null
 	 */
-	protected function __construct() {
+	public function __construct() {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
-
-		add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
-
-		add_action( 'wp_ajax_nopriv_webdam_get_api_response', array( $this, 'ajax_get_api_response' ) );
-
-		// Handle sideloading images from WebDAM
-		add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 
 		//load up plugin functionality only if we have settings
 		// and if we are authenticated
 		if ( \webdam_get_settings() && \webdam_is_authenticated() ) {
 
+			add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
+			add_action( 'admin_print_scripts', array( $this, 'action_admin_print_scripts' ) );
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
-
-			// Load admin variable for the domain in the plugin
-			add_action( 'admin_enqueue_scripts', array( $this, 'plugin_load_plugin_vars' ) );
+			add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
+			add_action( 'wp_ajax_nopriv_webdam_get_mock_api_response', array( $this, 'ajax_get_mock_api_response' ) );
+			add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
 		}
 	}
 
@@ -85,7 +80,11 @@ class Asset_Chooser {
 
 		$settings = webdam_get_settings();
 
-		$allowed_origins[] = webdam_get_site_protocol() . $settings['webdam_account_domain'];
+		if ( ! empty( $settings['webdam_account_domain'] ) ) {
+
+			$allowed_origins[] = webdam_get_site_protocol() . $settings['webdam_account_domain'];
+
+		}
 
 		return $allowed_origins;
 	}
@@ -106,11 +105,13 @@ class Asset_Chooser {
 	 * in the class-api.php:do_authentication() function, but uses
 	 * the access and refresh tokens we already have.
 	 *
+	 * @see get_current_api_response_url variable in action_admin_enqueue_scripts()
+	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	function ajax_get_api_response() {
+	function ajax_get_mock_api_response() {
 
 		$mock_api_response = array(
 			'access_token'  => webdam_get_current_access_token(),
@@ -126,6 +127,88 @@ class Asset_Chooser {
 	}
 
 	/**
+	 * Enqueue Admin scripts & styles
+	 */
+	public function action_admin_enqueue_scripts() {
+
+		$screen = get_current_screen();
+
+		// Only enqueue/localize the following items on edit/new post screens
+		if ( 'post' !== $screen->base ) {
+			return;
+		}
+
+		global $post;
+
+		// The [caption] and <img> elements inserted into the content
+		// utilize underscore's templating
+		wp_enqueue_script( 'underscore' );
+
+		$localized_variables = array();
+
+		if ( $settings = webdam_get_settings() ) {
+
+			// Build the client webdam url
+			$domain_path = '';
+
+			if ( ! empty( $settings['webdam_account_domain'] ) ) {
+
+				$domain_path = $settings['webdam_account_domain'];
+
+				if ( false === strpos( $domain_path, '://' ) ) {
+					$domain_path = webdam_get_site_protocol() . $domain_path;
+				}
+			}
+
+			// Send some PHP vars to JavaScript
+			$localized_variables = array(
+				'post_id' => $post->ID,
+				'asset_chooser_domain' => $domain_path,
+
+				// The return url is a hidden options page created in
+				// \Webdam\Admin::create_set_cookie_page()
+				'return_url' => esc_url_raw( webdam_get_admin_set_cookie_page_url() ),
+
+				// The response URL is used by WebDAM to back-ping us
+				// for the API token to authenticate the asset chooser iFrame
+				// Unfortunetly this information can't be passed in the iFrame URL
+				'get_current_api_response_url' => esc_url_raw( add_query_arg(
+					'action',
+					'webdam_get_mock_api_response',
+					admin_url( 'admin-ajax.php' )
+				) ),
+			);
+
+			// If sideloading is enabled note that in the localized
+			// data and include a nonce for that sideloading functionality
+			if ( ! empty( $settings['enable_sideloading'] ) ) {
+
+				$localized_variables['enable_sideloading'] = 1;
+				$localized_variables['sideload_nonce'] = wp_create_nonce( 'webdam_sideload_image' );
+
+			}
+		}
+
+		// Allow the localized variables to be filtered
+		$localized_variables = apply_filters( 'webdam-asset-chooser-localized-vars', $localized_variables );
+
+		// The main asset chooser js is loaded via TinyMCE
+		// as such, we're unable to use it for our localized vars handle
+		// Since we're using underscore we'll use that handle instead.
+		wp_localize_script( 'underscore', 'webdam', $localized_variables );
+
+		// The following CSS is used to style the asset chooser
+		// status popup which displays 'Importing your selection..'
+		wp_enqueue_style(
+			'webdam-chooser-styles',
+			WEBDAM_PLUGIN_URL . 'assets/webdam-asset-chooser.css',
+			array(),
+			false,
+			'screen'
+		);
+	}
+
+	/**
 	 * Enqueue any scripts or styles
 	 *
 	 * @param null
@@ -134,11 +217,13 @@ class Asset_Chooser {
 	 */
 	public function action_wp_enqueue_scripts() {
 
-		if ( is_admin() ) {
+		// Enqueue the webdam imported asset CSS
+		// This CSS is used to style the imported assets on the frontend
 
-		} else {
+		// Allow this CSS to be optional
+		$enqueue_frontend_css = apply_filters( 'webdam-frontend-css', 1 );
 
-			// Enqueue the webdam imported asset CSS
+		if ( $enqueue_frontend_css ) {
 			wp_enqueue_style(
 				'webdam-imported-asset',
 				WEBDAM_PLUGIN_URL . 'assets/webdam-imported-asset.css',
@@ -150,54 +235,24 @@ class Asset_Chooser {
 	}
 
 	/**
-	 * Enqueues the JS which loads the domain name
-	 *
-	 * @todo localize vars
-	 * @todo Move status markup into _ template
+	 * Render some HTML templates into the admin header for use by our JS
 	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function plugin_load_plugin_vars() {
+	public function action_admin_print_scripts() {
 
-		global $post;
+		$settings = webdam_get_settings();
 
 		$screen = get_current_screen();
 
 		// Only output the following <script> on edit/new post screens
 		if ( 'post' !== $screen->base ) {
 			return;
-		}
+		} ?>
 
-		$settings = webdam_get_settings();
-
-		// Build the client webdam url
-		$domain_path = $settings['webdam_account_domain'];
-
-		if ( false === strpos( $domain_path, '://' ) ) {
-			$domain_path = webdam_get_site_protocol() . $domain_path;
-		}
-
-		// The return url is a hidden options page created in
-		// \Webdam\Admin::create_set_cookie_page()
-		$return_url = add_query_arg(
-			'page',
-			'webdam-set-cookie',
-			admin_url( 'options-general.php' )
-		);
-
-		wp_enqueue_script( 'underscore' );
-
-		wp_enqueue_style(
-			'webdam-chooser-styles',
-			WEBDAM_PLUGIN_URL . 'assets/assetchooser.css',
-			array(),
-			false,
-			'screen'
-		);
-		?>
-
+		<!-- The 'Importing your selection' popup -->
 		<div class="webdam-asset-chooser-status">
 			<div class="working">
 				<?php esc_html_e( 'Importing your WebDAM selection..', 'PMC' ); ?>
@@ -205,16 +260,19 @@ class Asset_Chooser {
 			</div>
 			<div class="done"></div>
 		</div>
+
+		<?php if ( ! empty( $settings['enable_sideloading'] ) ) : ?>
+
+		<!--
+			The inserted [caption] and <img> inserted into content.
+			This template is only used when assets are sideloaded.
+		-->
 		<script type="text/template" id="webdam-insert-image-template">
 			[caption id="attachment_<%- attachment_id %>" align="alignnone" class="webdam-imported-asset"]<img class="size-full wp-image-<%- attachment_id %> webdam-imported-asset" src="<%- source %>" alt="<%- alttext %>" width="<%- width %>" height="<%- height %>" /><%- title %> - <%- caption %>[/caption]
 		</script>
-		<script type="text/javascript">
-			var webdam_sideload_nonce = <?php echo wp_json_encode( wp_create_nonce( 'webdam_sideload_image' ) ); ?>;
-			var post_id = <?php echo wp_json_encode( $post->ID ); ?>;
-			var asset_chooser_domain = <?php echo wp_json_encode( $domain_path ); ?>;
-			var webdam_return_url = <?php echo wp_json_encode( esc_url_raw( $return_url ) ); ?>;
-			var webdam_get_current_api_response_url = <?php echo wp_json_encode( add_query_arg( 'action', 'webdam_get_api_response', admin_url( 'admin-ajax.php' ) ) ); ?>;
-		</script>
+
+		<?php endif; ?>
+
 		<?php
 	}
 
@@ -225,7 +283,7 @@ class Asset_Chooser {
 	 * @return array Array of TinyMCE plugins
 	 */
 	public function mce_external_plugins( $plugin_array ) {
-		$plugin_array['webdam_asset_chooser'] = WEBDAM_PLUGIN_URL . 'assets/assetchooser-loader.js';
+		$plugin_array['webdam_asset_chooser'] = WEBDAM_PLUGIN_URL . 'assets/webdam-asset-chooser.js';
 		return $plugin_array;
 	}
 
@@ -278,9 +336,9 @@ class Asset_Chooser {
 		$webdam_asset_id  = (int) $_POST['webdam_asset_id'];
 		$webdam_asset_url = esc_url_raw( $_POST['webdam_asset_url'] );
 		$webdam_asset_filename = sanitize_file_name( $_POST['webdam_asset_filename'] );
-
-		// Adjust the remote image url so we receive the largest image possible
-		$webdam_asset_url = str_replace( 'md_', '1280_', $webdam_asset_url );
+		
+		// Allow the asset url to be filtered when sideloading
+		$webdam_asset_url = apply_filters( 'webdam-sideload-asset-url', $webdam_asset_url );
 
 		// Hook into add_attachment so we can obtain the sideloaded image ID
 		// media_sideload_image does not return the ID, which sucks.
@@ -296,6 +354,9 @@ class Asset_Chooser {
 		// We don't need this any longer—let's ditch it.
 		delete_post_meta( $post_id, 'webdam_attachment_id_tmp' );
 
+		// Broadcast the new attachment ID
+		do_action( 'webdam-sideload-attachment-id', $attachment_id );
+
 		// Grab the current image metadata
 		$wordpress_image_meta = wp_get_attachment_metadata( $attachment_id );
 
@@ -305,6 +366,9 @@ class Asset_Chooser {
 		// and fetch what's needed, but the likelihood of images with data
 		// is slim, and depends on the photographer.
 		$webdam_image_meta = \webdam_get_asset_metadata( $webdam_asset_id );
+
+		// Allow the raw sideloaded asset meta to be filtered
+		$webdam_image_meta = apply_filters( 'webdam-sideload-asset-meta', $webdam_image_meta );
 
 		// Set the initial alttext
 		$post_alttext = '';
@@ -332,12 +396,17 @@ class Asset_Chooser {
 			}
 
 			// Set the attachment post attributes
-			wp_update_post( array(
+			$attachment_data = array(
 				'ID'           => $attachment_id,
 				'post_title'   => $post_title,
 				'post_content' => $post_content,
 				'post_excerpt' => $post_excerpt,
-			) );
+			);
+
+			// Allow the sideloaded attachment data to be filtered
+			$attachment_data = apply_filters( 'webdam-sideload-attachment-data', $attachment_data );
+
+			wp_update_post( $attachment_data );
 
 			// Set the attachment post meta values
 			$attachment_post_metas = array(
@@ -346,6 +415,9 @@ class Asset_Chooser {
 				'_webdam_asset_id'         => $webdam_asset_id,
 				'_webdam_asset_filename'   => $webdam_asset_filename,
 			);
+
+			// Allow the sideloaded attachment post meta to be filtered
+			$attachment_post_metas = apply_filters( 'webdam-sideload-attachment-post-meta', $attachment_post_metas );
 
 			foreach ( $attachment_post_metas as $meta_key => $meta_value ) {
 				update_post_meta( $attachment_id, $meta_key, $meta_value );
@@ -362,6 +434,9 @@ class Asset_Chooser {
 				$wordpress_image_meta['image_data'] = (array) $webdam_image_meta;
 
 			}
+
+			// Allow the WordPress image meta to be filtered before saving
+			$wordpress_image_meta = apply_filters( 'webdam-sideload-attachment-meta', $wordpress_image_meta );
 
 			// Update the metadata stored for the image by WordPress
 			wp_update_attachment_metadata(

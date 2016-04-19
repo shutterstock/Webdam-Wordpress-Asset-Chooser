@@ -12,6 +12,10 @@ class Admin {
 	 */
 	private static $_instance;
 
+	private $admin_settings_page_url;
+
+	private $admin_set_cookie_page_url;
+
 	/**
 	 * Fetch THE instance of the admin object
 	 *
@@ -39,53 +43,18 @@ class Admin {
 	 */
 	public function __construct() {
 
+		// Display a notice when WebDAM settings are needed
+		if ( ! \webdam_get_settings() ) {
+			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
+		}
+
 		// Create the Settings > Webdam page
-		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
+		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
 		add_action( 'update_option_webdam_settings', array( $this, 'update_option_webdam_settings' ) );
 
 		// Enqueue styles and scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
-
-		// Display a notice when credentials are needed
-		if ( ! \webdam_get_settings() ) {
-			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
-		}
-	}
-
-	/**
-	 * Enqueue admin scripts and styles
-	 *
-	 * @param null
-	 *
-	 * @return null
-	 */
-	public function wp_enqueue_scripts() {
-
-		// Only enqueue these items on our settings page
-		if ( ! empty( $_GET['page'] ) ) {
-
-			if ( 'webdam-settings' === $_GET['page'] ) {
-
-				// Enqueue the webdam admin JS
-				wp_enqueue_script(
-					'webdam-admin-settings',
-					WEBDAM_PLUGIN_URL . 'assets/admin-settings.js',
-					array( 'jquery' ),
-					false,
-					false
-				);
-
-				// Enqueue the webdam admin CSS
-				wp_enqueue_style(
-					'webdam-admin-settings',
-					WEBDAM_PLUGIN_URL . 'assets/admin-settings.css',
-					array(),
-					false,
-					'screen'
-				);
-			}
-		}
 	}
 
 	/**
@@ -106,21 +75,27 @@ class Admin {
 
 		<div class="error">
 			<p>
-				<strong>
-					Please update the <a href="<?php echo esc_url( admin_url( 'options-general.php?page=webdam-settings' ) ) ?>">WebDAM Settings</a> with your information.
+				<strong><?php
+
+					printf(
+						wp_kses( __( 'Please update the <a href="%s">%s</a> with your information.', 'webdam' ) ),
+						esc_url( $this->settings_admin_page_url ),
+						esc_html_e( 'WebDAM Settings', 'webdam' )
+					); ?>
+
 				</strong>
 			</p>
 		</div><?php
 	}
 
 	/**
-	 * Create the settings page
+	 * Create the settings page(s)
 	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function add_plugin_page() {
+	public function action_admin_menu() {
 
 		// Create the 'WebDAM' Settings page
 		add_options_page(
@@ -129,6 +104,12 @@ class Admin {
 			'manage_options',
 			'webdam-settings',
 			array( $this, 'create_settings_page' )
+		);
+
+		$this->admin_settings_page_url = add_query_arg(
+			'page',
+			'webdam-settings',
+			admin_url( 'options-general.php' )
 		);
 
 		// Create the soon-to-be hidden admin set cookie page
@@ -142,8 +123,71 @@ class Admin {
 			array( $this, 'create_set_cookie_page' )
 		);
 
+		$this->admin_set_cookie_page_url = add_query_arg(
+			'page',
+			'webdam-set-cookie',
+			admin_url( 'options-general.php' )
+		);
+
 		// Hide the admin set cookie page
 		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
+	}
+
+	/**
+	 * Getter function to obtain the admin settings page url
+	 *
+	 * @return string Unescaped url
+	 */
+	public function get_admin_settings_page_url() {
+		return $this->admin_settings_page_url;
+	}
+
+	/**
+	 * Getter function to obtain the admin settings page url
+	 *
+	 * @return string Unescaped url
+	 */
+	public function get_admin_set_cookie_page_url() {
+		return $this->admin_set_cookie_page_url;
+	}
+
+	/**
+	 * Enqueue admin scripts and styles
+	 *
+	 * @param null
+	 *
+	 * @return null
+	 */
+	public function wp_enqueue_scripts() {
+
+		// Only enqueue these items on our settings pages
+		if ( ! empty( $_GET['page'] ) ) {
+
+			if ( 'webdam-settings' === $_GET['page'] ) {
+
+				// Enqueue the WebDAM admin settings CSS
+				wp_enqueue_style(
+					'webdam-admin-settings',
+					WEBDAM_PLUGIN_URL . 'assets/webdam-admin-settings.css',
+					array(),
+					false,
+					'screen'
+				);
+			}
+
+			if ( 'webdam-set-cookie' == $_GET['page'] ) {
+
+				// Enqueue the WebDAM cookie setting JavaScript
+				wp_enqueue_script(
+					'webdam-set-cookie',
+					WEBDAM_PLUGIN_URL . 'assets/webdam-set-cookie.js',
+					array(),
+					false,
+					true
+				);
+
+			}
+		}
 	}
 
 	/**
@@ -152,14 +196,19 @@ class Admin {
 	 * This page is used to set the chosen asset cookie
 	 * it needs to be accessible, but hidden from the admin menu
 	 *
-	 * @todo enqueue the cookie js instead of including it
-	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function create_set_cookie_page() {
-		include( WEBDAM_PLUGIN_DIR . '/includes/set-cookie.html' );
+	public function create_set_cookie_page() { ?>
+
+		<p>
+			<?php esc_html_e( 'This page is used to set the WebDAM chosen asset cookie.', 'webdam' ); ?>
+			<br />
+			<?php esc_html_e( 'It needs to be accessible, but is purposefully hidden from the admin menu.', 'webdam' ); ?>
+		</p>
+
+		<?php
 	}
 
 	/**
@@ -239,9 +288,7 @@ class Admin {
 								// Display link to authenticate if needed
 								if ( \webdam_is_authenticated() ) {
 
-									// @todo button to manually refresh token?
-
-									// @todo button to test API?
+									// API is authentication—good to go
 
 								} else {
 									// Once we have client_id/secret show the api auth_code link
@@ -286,6 +333,16 @@ class Admin {
 									name="webdam_settings[api_client_secret]"
 									value="<?php echo ! empty( $settings['api_client_secret'] ) ? esc_attr( $settings['api_client_secret'] ) : ''; ?>">
 							</td>
+						</tr><tr id="enable-sideloading-row">
+							<th scope="row"><?php esc_html_e( 'Save chosen assets in the Media Library', 'webdam' ); ?></th>
+							<td>
+								<input
+									type="checkbox"
+									id="enable-sideloading"
+									name="webdam_settings[enable_sideloading]"
+									value="1"
+									<?php isset( $settings['enable_sideloading'] ) ? checked( $settings['enable_sideloading'], 1 ) : ''; ?>>
+							</td>
 						</tr>
 					</tbody>
 				</table><?php
@@ -312,10 +369,6 @@ class Admin {
 		$response_type = 'updated';
 		$response_message = '';
 
-		// @todo encrypt the piss outta this stuff for storage
-		// ...but in a way we can still retrieve values for sending auth
-		// to webdam in the api.
-
 		// Save the domain
 		if( isset( $input['webdam_account_domain'] ) ) {
 			$new_settings['webdam_account_domain'] = sanitize_text_field( $input['webdam_account_domain'] );
@@ -329,6 +382,11 @@ class Admin {
 		// Save the client secret
 		if( isset( $input['api_client_secret'] ) ) {
 			$new_settings['api_client_secret'] = sanitize_text_field( $input['api_client_secret'] );
+		}
+
+		// Save the sideloading preference
+		if( isset( $input['enable_sideloading'] ) ) {
+			$new_settings['enable_sideloading'] = intval( $input['enable_sideloading'] );
 		}
 
 		// Determine what status message to display to the user
@@ -359,6 +417,7 @@ class Admin {
 
 	/**
 	 * Fires after the webdam_settings option is saved
+	 * using the core "update_option_{$option}" action
 	 *
 	 * @param mixed  $old_value The old option value.
 	 * @param mixed  $new_value The new option value.
