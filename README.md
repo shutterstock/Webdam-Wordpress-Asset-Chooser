@@ -3,7 +3,7 @@
 The WebDAM Asset Chooser for Wordpress allows you to embed assets from your WebDAM account directly into Wordpress pages or posts. Simply enter the domain that you integrate with in the WebDAM settings and you are all set.
 
 ## Install
-1. Download the zip file attached to this article.
+1. Download the repository as a zip file.
 2. From the WordPress admin console, navigate to Plugins and choose Add New.
 3. Click Upload Plugin at the top of the page.
 4. Select the webdam.wordpress.assetchooser.zip file and then select Install Now.

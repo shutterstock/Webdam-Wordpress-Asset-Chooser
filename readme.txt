@@ -1,3 +1,4 @@
+=== WebDAM Asset Chooser ===
 Author: WebDAM
 Author URI: http://www.webdam.com
 Plugin URI: http://www.webdam.com
@@ -43,3 +44,14 @@ When adding a new post or editing an existing post, you will see a WebDAM icon i
 5. Click Insert.
 
 Note: The following asset types are not embeddable through the plugin: .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .indd., .swf, .ogg, .qxd, .qxp, .svg, .svgz, .otf, .sit, .sitx, .rar, .txt, .zip, .html, .htm.
+
+== Copyright ==
+Copyright 2014 - 2016 WebDAM
+
+## LICENSE
+
+Licensed under the Wordpress License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+https://wordpress.org/about/gpl/
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
