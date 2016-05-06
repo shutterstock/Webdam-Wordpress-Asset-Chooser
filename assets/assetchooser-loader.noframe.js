@@ -11,7 +11,7 @@
 			});
 
 			ed.addCommand('showAssetPicker', function() {
-				var params = [{label:"Embed the link", action:"getAssetId", showAddLink:"true", sessionMode:"session"}];
+				var params = [{label:"Embed the link", action:"getAssetId", showAddLink:"true", sessionMode:"session", allowMultipleSelect:"true"}];
 				var returnPath = mainUrl + '/setvariable.html';
 				window.open(asset_picker_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(returnPath) + 
 						'&params=' + encodeURIComponent(JSON.stringify(params)));
