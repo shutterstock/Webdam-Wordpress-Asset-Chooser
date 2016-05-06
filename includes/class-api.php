@@ -448,8 +448,8 @@ class API {
 		// POST the request to the given url
 		$response = wp_safe_remote_post( $url, $args );
 
-		// Broadcast the raw get response
-		do_action( 'webdam-get-response', $response );
+		// Broadcast the raw post response
+		do_action( 'webdam-post-response', $response );
 
 		$response['body'] = json_decode( $response['body'] );
 
@@ -494,8 +494,8 @@ class API {
 		// GET a response for the given url
 		$response = wp_safe_remote_get( $url, $args );
 
-		// Broadcast the raw post response
-		do_action( 'webdam-post-response', $response );
+		// Broadcast the raw get response
+		do_action( 'webdam-get-response', $response );
 
 		$response['body'] = json_decode( $response['body'] );
 
