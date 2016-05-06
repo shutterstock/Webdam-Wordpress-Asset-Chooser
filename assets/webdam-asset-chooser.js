@@ -15,7 +15,13 @@
 			});
 
 			ed.addCommand('showAssetChooser', function() {
-				var params = [{label:"Embed the link", action:"getAssetId", showEmbedLink:"true", showAddLink:"false"}];
+				var params = [ {
+					label: 'Embed the link',
+					action: 'getAssetId',
+					showEmbedLink: 'true',
+					showAddLink: 'false',
+					allowMultipleSelect: 'true'
+				} ];
 
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
@@ -40,58 +46,63 @@
 						document.cookie = "widgetEmbedValue=;path=/;";
 						clearInterval(mainInterval);
 
-						var returnedImage = JSON.parse(currentCookieValue);
-						if (returnedImage.embedType != 'dismiss') {
-							if (returnedImage.embedType == 'preview') {
+						var returnedAssets = JSON.parse( currentCookieValue );
 
-								if ( 'undefined' != typeof webdam.enable_sideloading && 1 == webdam.enable_sideloading ) {
-									// Display waiting animation
-									$( '.webdam-asset-chooser-status' ).addClass( 'visible' );
+						for ( var i = 0; i < returnedAssets.length; i++ ) {
 
-									// POST the image URL to the server via AJAX
-									// Server side—sideload the image into our media library
-									// embed the copied version of the image (from our ML)
-									$.post(
-										ajaxurl,
-										{
-											action: 'pmc-webdam-sideload-image',
-											nonce: webdam.sideload_nonce,
-											post_id: webdam.post_id,
-											webdam_asset_id: returnedImage.id,
-											webdam_asset_url: returnedImage.url,
-											webdam_asset_filename: returnedImage.filename
-										},
-										function( response ) {
+							var asset = returnedAssets[ i ];
 
-											if ( response.success ) {
+							if ( asset.embedType != 'dismiss' ) {
+								if ( asset.embedType == 'preview' || asset.embedType == undefined ) {
+									if ( 'undefined' != typeof webdam.enable_sideloading && 1 == webdam.enable_sideloading ) {
+										// Display waiting animation
+										$( '.webdam-asset-chooser-status' ).addClass( 'visible' );
 
-												var image_template = _.template( $( 'script#webdam-insert-image-template' ).html() );
+										// POST the image URL to the server via AJAX
+										// Server side—sideload the image into our media library
+										// embed the copied version of the image (from our ML)
+										$.post(
+											ajaxurl,
+											{
+												action: 'pmc-webdam-sideload-image',
+												nonce: webdam.sideload_nonce,
+												post_id: webdam.post_id,
+												webdam_asset_id: asset.id,
+												webdam_asset_url: asset.url,
+												webdam_asset_filename: asset.filename
+											},
+											function( response ) {
 
-												ed.execCommand( 'mceInsertContent', 0, image_template( response.data ) );
+												if ( response.success ) {
 
+													var image_template = _.template( $( 'script#webdam-insert-image-template' ).html() );
+
+													ed.execCommand( 'mceInsertContent', 0, image_template( response.data ) );
+
+												}
+
+												// Hide waiting animation
+												$( '.webdam-asset-chooser-status' ).removeClass( 'visible' );
+
+												// Close the WebDAM modal window
+												windowReference.close();
 											}
+										);
+									} else {
+										ed.execCommand( 'mceInsertContent', 0, '<img src="' + asset.url + '" alt="' + asset.filename + '" />' );
 
-											// Hide waiting animation
-											$( '.webdam-asset-chooser-status' ).removeClass( 'visible' );
-
-											// Close the WebDAM modal window
-											windowReference.close();
-										}
-									);
+										// Close the WebDAM modal window
+										windowReference.close();
+									}
 								} else {
-									ed.execCommand( 'mceInsertContent', 0, '<img src="' + returnedImage.url + '" alt="' + returnedImage.filename + '" />' );
+									var textLink = prompt('Please enter the label of your link', asset.filename);
 
+									var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + asset.id ).text( textLink );
+
+									ed.execCommand( 'mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ) );
 									// Close the WebDAM modal window
 									windowReference.close();
 								}
-							} else {
-								var textLink = prompt('Please enter the label of your link', returnedImage.filename);
-
-								var elem_anchor = jQuery( '<a></a>' ).attr( 'href', webDAMHTMLPath + '/download.php?id=' + returnedImage.id ).text( textLink );
-
-								ed.execCommand( 'mceInsertContent', 0, elem_anchor.prop( 'outerHTML' ) );
-								// Close the WebDAM modal window
-								windowReference.close();
 							}
 						}
 
