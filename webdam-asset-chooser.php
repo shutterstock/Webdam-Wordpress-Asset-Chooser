@@ -13,7 +13,7 @@ namespace Webdam;
 define( 'WEBDAM_PLUGIN_VERSION', '1.2.0' );
 define( 'WEBDAM_PLUGIN_DIR', __DIR__ );
 define( 'WEBDAM_PLUGIN_SLUG', 'webdam-asset-chooser' );
-define( 'WEBDAM_PLUGIN_URL', plugins_url( '', __FILE__ ) );
+define( 'WEBDAM_PLUGIN_URL', trailingslashit( plugins_url( '', __FILE__ ) ) );
 
 require_once __DIR__ . '/includes/class-core.php';
 require_once __DIR__ . '/includes/helpers.php';
