@@ -452,12 +452,31 @@ class Admin {
 
 		// Display a message to the user
 		if ( ! empty( $response_message ) ) {
-			add_settings_error(
-				'webdam-settings-respsonse',
-				esc_attr( 'webdam-settings-' . $response_type ),
-				$response_message,
-				$response_type
-			);
+
+			global $wp_settings_errors;
+
+			$show_settings_error = true;
+
+			// Set a flag if our settings error is already scheduled to display
+			// This can occur if this sanitization callback gets called twice.
+			foreach ( $wp_settings_errors as $error ) {
+				if ( 'webdam-settings-respsonse' === $error['setting'] ) {
+					if ( $response_message === $error['message'] ) {
+						$show_settings_error = false;
+					}
+				}
+			}
+
+			// Only show the new settings error if the same message
+			// has not already been scheduled to display
+			if ( $show_settings_error ) {
+				add_settings_error(
+					'webdam-settings-respsonse',
+					esc_attr( 'webdam-settings-' . $response_type ),
+					$response_message,
+					$response_type
+				);
+			}
 		}
 
 		// Update the values stored in our database
