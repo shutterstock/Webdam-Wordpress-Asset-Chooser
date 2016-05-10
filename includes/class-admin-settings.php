@@ -43,6 +43,20 @@ class Admin {
 	 */
 	public function __construct() {
 
+		// Fetch our cached page urls so they're available in this class
+		// before the admin_menu hook fires
+		$admin_settings_page_url = get_transient( 'WebDAM\Admin\settings_page_url' );
+		$admin_set_cookie_page_url = get_transient( 'WebDAM\Admin\set_cookie_page_url' );
+
+		if ( ! empty( $admin_settings_page_url ) ) {
+			$this->admin_settings_page_url = $admin_settings_page_url;
+		}
+
+		if ( ! empty( $admin_set_cookie_page_url ) ) {
+			$this->admin_set_cookie_page_url = $admin_set_cookie_page_url;
+		}
+
+
 		// Display a notice when WebDAM settings are needed
 		if ( ! \webdam_get_settings() ) {
 			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
@@ -112,6 +126,9 @@ class Admin {
 			admin_url( 'options-general.php' )
 		);
 
+		// Cache the settings page url so it's available before these hooks execute
+		set_transient( 'WebDAM\Admin\settings_page_url', $this->admin_settings_page_url );
+
 		// Create the soon-to-be hidden admin set cookie page
 		// This page is used to set the chosen asset cookie
 		// it needs to be accessible, but hidden from the admin menu
@@ -128,6 +145,9 @@ class Admin {
 			'webdam-set-cookie',
 			admin_url( 'options-general.php' )
 		);
+
+		// Cache the settings page cookie url so it's available before these hooks execute
+		set_transient( 'WebDAM\Admin\set_cookie_page_url', $this->admin_set_cookie_page_url );
 
 		// Hide the admin set cookie page
 		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
@@ -432,12 +452,31 @@ class Admin {
 
 		// Display a message to the user
 		if ( ! empty( $response_message ) ) {
-			add_settings_error(
-				'webdam-settings-respsonse',
-				esc_attr( 'webdam-settings-' . $response_type ),
-				$response_message,
-				$response_type
-			);
+
+			global $wp_settings_errors;
+
+			$show_settings_error = true;
+
+			// Set a flag if our settings error is already scheduled to display
+			// This can occur if this sanitization callback gets called twice.
+			foreach ( $wp_settings_errors as $error ) {
+				if ( 'webdam-settings-respsonse' === $error['setting'] ) {
+					if ( $response_message === $error['message'] ) {
+						$show_settings_error = false;
+					}
+				}
+			}
+
+			// Only show the new settings error if the same message
+			// has not already been scheduled to display
+			if ( $show_settings_error ) {
+				add_settings_error(
+					'webdam-settings-respsonse',
+					esc_attr( 'webdam-settings-' . $response_type ),
+					$response_message,
+					$response_type
+				);
+			}
 		}
 
 		// Update the values stored in our database
