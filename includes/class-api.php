@@ -18,6 +18,8 @@ class API {
 
 	protected $grant_type = 'authorization_code';
 
+	protected $has_settings = false;
+
 	protected $client_id = null;
 	protected $client_secret = null;
 
@@ -55,8 +57,12 @@ class API {
 				// No cache available—let's create one
 				$instance = new self();
 
-				// Cache the API instance
-				set_transient( 'Webdam\API', $instance );
+				// Only cache the instance when it contains valid settings
+				if ( $instance->has_settings ) {
+
+					// Cache the API instance
+					set_transient( 'Webdam\API', $instance );
+				}
 			} else {
 
 				// Cache is good
@@ -83,20 +89,20 @@ class API {
 	 */
 	public function __construct() {
 
-		// The settings page may display a link for the user to click
-		// and be taken to WebDAM's website to say "yes, this website
-		// is allowed to access my account", i.e. the user went through
-		// the 'authentication' process to 'authenticate' our application.
-		//
-		// After authenticating with WebDM the user is redirected
-		// back to our settings page where they initially began the
-		// authentication process.
-		//
-		// Create an internal reference to the settings page URL
-		// aka known as the authentication redirect URL.
-		$this->authorization_redirect_uri = webdam_get_admin_settings_page_url();
-
 		if ( $settings = webdam_get_settings() ) {
+
+			// The settings page may display a link for the user to click
+			// and be taken to WebDAM's website to say "yes, this website
+			// is allowed to access my account", i.e. the user went through
+			// the 'authentication' process to 'authenticate' our application.
+			//
+			// After authenticating with WebDM the user is redirected
+			// back to our settings page where they initially began the
+			// authentication process.
+			//
+			// Create an internal reference to the settings page URL
+			// aka known as the authentication redirect URL.
+			$this->authorization_redirect_uri = webdam_get_admin_settings_page_url();
 
 			// Only proceed if we have credentials to send
 			if ( ! empty( $settings['api_client_id'] ) && ! empty( $settings['api_client_secret'] ) ) {
@@ -104,7 +110,12 @@ class API {
 				// Store internal references to the webdam settings
 				$this->client_id = $settings['api_client_id'];
 				$this->client_secret = $settings['api_client_secret'];
+			}
 
+			// Only flag our instance as having settings if all 3 of the following
+			// needed items is present and not empty.
+			if ( ! empty( $this->authorization_redirect_uri ) && ! empty( $this->client_id ) && ! empty( $this->client_secret ) ) {
+				$this->has_settings = true;
 				$this->init();
 			}
 		}
