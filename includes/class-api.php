@@ -140,27 +140,6 @@ class API {
 
 		// Ensure we always have valid authentication
 		add_action( 'admin_init', array( $this, 'ensure_were_authenticated' ), 0, 11 );
-
-		// Update the api cache when new settings have been saved
-		add_action( 'webdam-saved-new-settings', array( $this, 'refresh_api_cache' ) );
-	}
-
-	/**
-	 * Refresh this classes instance cache
-	 *
-	 * @internal Called via action: webdam-saved-new-settings
-	 *           which fires when the webdam admin settings
-	 *           have been saved.
-	 *
-	 * @param null
-	 *
-	 * @return null
-	 */
-	public function refresh_api_cache() {
-
-		// Fetch a new instance of the class
-		// passing 'true' forces a cache refresh
-		$this->get_instance( true );
 	}
 
 	/**
@@ -554,6 +533,15 @@ class API {
 		return false;
 	}
 }
+
+// Update the api cache when new settings have been saved
+add_action( 'webdam-saved-new-settings', function() {
+
+	// Fetch a new instance of the class
+	// passing 'true' forces a cache refresh
+	API::get_instance( true );
+
+}, 10, 0 );
 
 // The API is only used in the admin
 if ( is_admin() ) {
