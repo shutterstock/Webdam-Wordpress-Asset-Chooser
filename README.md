@@ -25,14 +25,14 @@ Note: The following asset types are not embeddable through the plugin: .doc, .do
 ## Changelog
 
 * 1.2.1
-** Allow selecting multiple assets by default
+*** Allow selecting multiple assets by default
 * 1.2.0 =
-** Optionally sideload selected asset into your WP media library
-** Initial WebDAM API Integration
-** Fetch sideloaded asset metadata from the WebDAM API
-** User interface improvements
+*** Optionally sideload selected asset into your WP media library
+*** Initial WebDAM API Integration
+*** Fetch sideloaded asset metadata from the WebDAM API
+*** User interface improvements
 * 1.0
-** Initial Release.
+*** Initial Release.
 
 ## LICENSE
 Copyright 2016 WebDAM
