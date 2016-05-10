@@ -20,19 +20,19 @@ When editing a post/page, you will see a WebDAM icon in the editor toolbar.
 4. Choose which size thumbnail you would like to embed (1280, 550, 310, 220, or 100px).
 5. Click Insert.
 
-Note: The following asset types are not embeddable through the plugin: .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .indd., .swf, .ogg, .qxd, .qxp, .svg, .svgz, .otf, .sit, .sitx, .rar, .txt, .zip, .html, .htm.
+*Note: The following asset types are not embeddable through the plugin: .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf, .indd., .swf, .ogg, .qxd, .qxp, .svg, .svgz, .otf, .sit, .sitx, .rar, .txt, .zip, .html, .htm.*
 
 ## Changelog
 
 * 1.2.1
-*** Allow selecting multiple assets by default
-* 1.2.0 =
-*** Optionally sideload selected asset into your WP media library
-*** Initial WebDAM API Integration
-*** Fetch sideloaded asset metadata from the WebDAM API
-*** User interface improvements
+  * Allow selecting multiple assets by default
+* 1.2.0
+  * Optionally sideload selected asset into your WP media library
+  * Initial WebDAM API Integration
+  * Fetch sideloaded asset metadata from the WebDAM API
+  * User interface improvements
 * 1.0
-*** Initial Release.
+  * Initial Release.
 
 ## LICENSE
 Copyright 2016 WebDAM
