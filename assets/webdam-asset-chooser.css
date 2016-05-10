@@ -24,7 +24,7 @@
 	-o-transform: translate( -50%, -50% );
 	transform: translate( -50%, -50% );
 	width: 300px ;
-	z-index: 100102 ; /* WebDAM iframe window is 100101 */
+	z-index: 999999 ;
 }
 	.webdam-asset-chooser-status.visible {
 		display: block ;
