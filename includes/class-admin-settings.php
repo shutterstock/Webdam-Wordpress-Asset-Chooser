@@ -43,6 +43,20 @@ class Admin {
 	 */
 	public function __construct() {
 
+		// Fetch our cached page urls so they're available in this class
+		// before the admin_menu hook fires
+		$admin_settings_page_url = get_transient( 'WebDAM\Admin\settings_page_url' );
+		$admin_set_cookie_page_url = get_transient( 'WebDAM\Admin\set_cookie_page_url' );
+
+		if ( ! empty( $admin_settings_page_url ) ) {
+			$this->admin_settings_page_url = $admin_settings_page_url;
+		}
+
+		if ( ! empty( $admin_set_cookie_page_url ) ) {
+			$this->admin_set_cookie_page_url = $admin_set_cookie_page_url;
+		}
+
+
 		// Display a notice when WebDAM settings are needed
 		if ( ! \webdam_get_settings() ) {
 			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
@@ -112,6 +126,9 @@ class Admin {
 			admin_url( 'options-general.php' )
 		);
 
+		// Cache the settings page url so it's available before these hooks execute
+		set_transient( 'WebDAM\Admin\settings_page_url', $this->admin_settings_page_url );
+
 		// Create the soon-to-be hidden admin set cookie page
 		// This page is used to set the chosen asset cookie
 		// it needs to be accessible, but hidden from the admin menu
@@ -128,6 +145,9 @@ class Admin {
 			'webdam-set-cookie',
 			admin_url( 'options-general.php' )
 		);
+
+		// Cache the settings page cookie url so it's available before these hooks execute
+		set_transient( 'WebDAM\Admin\set_cookie_page_url', $this->admin_set_cookie_page_url );
 
 		// Hide the admin set cookie page
 		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
