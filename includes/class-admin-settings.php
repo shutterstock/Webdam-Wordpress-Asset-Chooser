@@ -220,6 +220,35 @@ class Admin {
 	 */
 	public function create_settings_page_elements() {
 
+		/*
+		 * WordPress on WPCOM renders JavaScript on the admin
+		 * pages which prevents admin pages from being loaded within
+		 * an iframe. Because we're loading the webdam-set-cookie page
+		 * within a hidden iframe to set the webdam cookie, we need
+		 * to disable that enforcement. For reference, the JavaScript
+		 * looks like this:
+		 *
+		 * <script type="text/javascript">
+		 *	if (window.top !== window.self) {
+		 *		window.top.location.href = window.self.location.href; }
+		 *	</script>
+		 *
+		 * There are two possible ways to prevent this script from being outputted.
+		 *
+		 * Either define IFRAME_REQUEST on the iframed admin page before
+		 * the admin_print_scripts action. (Which is what we're doing here on admin_init)
+		 *
+		 * Or, use a URL with frame-nonce GET param and a value obtained from
+		 * wpcom_get_frame_nonce() function's call. Eg.:
+		 * add_query_arg( array( 'frame-nonce' => wpcom_get_frame_nonce() ), $url );
+		 *
+		 * Because this restriction has to do with using a specific admin page,
+		 * it makes sense to use the named const approach rather than the nonce method.
+		 */
+		if ( 'webdam-set-cookie' === $_GET['page'] ) {
+			define( 'IFRAME_REQUEST', true );
+		}
+
 		/**
 		 * Register the webdam_settings setting
 		 *
