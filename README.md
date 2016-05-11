@@ -1,4 +1,4 @@
-# WebDAM Asset Chooser WordPress plugin
+# WebDAM Asset Chooser WordPress plugin (v1.2.1)
 
 The WebDAM Asset Chooser for WordPress allows you to embed assets from your WebDAM account directly into WordPress pages or posts.
 

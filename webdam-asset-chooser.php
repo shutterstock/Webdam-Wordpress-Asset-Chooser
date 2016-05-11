@@ -3,14 +3,14 @@
  Plugin Name: WebDAM Asset Chooser
  Plugin URI: http://webdam.com/
  Description: Import WebDAM assets into WordPress.
- Version: 1.2.0
+ Version: 1.2.1
  Author: WebDAM, PMC, Amit Gupta, James Mehorter
  Author URI: http://webdam.com/
 */
 
 namespace Webdam;
 
-define( 'WEBDAM_PLUGIN_VERSION', '1.2.0' );
+define( 'WEBDAM_PLUGIN_VERSION', '1.2.1' );
 define( 'WEBDAM_PLUGIN_DIR', __DIR__ );
 define( 'WEBDAM_PLUGIN_SLUG', 'webdam-asset-chooser' );
 define( 'WEBDAM_PLUGIN_URL', trailingslashit( plugins_url( '', __FILE__ ) ) );
