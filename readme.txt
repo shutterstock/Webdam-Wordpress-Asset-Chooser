@@ -13,7 +13,10 @@ The WebDAM Asset Chooser for Wordpress allows you to embed assets from your WebD
 2. Activate the plugin.
 3. Visit Settings > WebDAM
 4. Enter your WebDAM Domain
-5. Follow the API prompts to authenticate with WebDAM
+5. Optionally enable the WebDAM API integration (see below for details)
+
+= Enabling the WebDAM API integration =
+Enabling the WebDAM API integration allows your users to bypass the Asset Chooser login prompt, logging in all users with the same account. When enabled, the API also provides an option to store your chosen assets in your WordPress Media Library. To enable the API integration select 'Enable WebDAM API Integration' in your WordPress Settings > WebDAM section—then follow the prompts to enter your credentials and authenticate your website to use your WebDAM account.
 
 = Adding Assets from WebDAM in a Post =
 When adding a new post or editing an existing post, you will see a WebDAM icon in the toolbar that appears above the post:
