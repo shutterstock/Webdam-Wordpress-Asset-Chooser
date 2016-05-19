@@ -47,17 +47,28 @@ class Asset_Chooser {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
 
-		//load up plugin functionality only if we have settings
-		// and if we are authenticated
-		if ( \webdam_get_settings() && \webdam_is_authenticated() ) {
+		// Load up plugin functionality only if we have settings
+		if ( \webdam_get_settings() ) {
 
 			add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
 			add_action( 'admin_print_scripts', array( $this, 'action_admin_print_scripts' ) );
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
 			add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
-			add_action( 'wp_ajax_nopriv_webdam_get_mock_api_response', array( $this, 'ajax_get_mock_api_response' ) );
-			add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
+			
+			// Log into the asset chooser if the API integration has been enabled
+			if ( \webdam_api_is_enabled() && \webdam_api_is_authenticated() ) {
+
+				// Enable Asset Choose oauth login if it's been enabled
+				if ( \webdam_asset_chooser_api_login_is_enabled() ) {
+					add_action( 'wp_ajax_nopriv_webdam_get_mock_api_response', array( $this, 'ajax_get_mock_api_response' ) );
+				}
+
+				// Turn on the API sideloading if it's been enabled
+				if ( \webdam_api_sideloading_is_enabled() ) {
+					add_action( 'wp_ajax_pmc-webdam-sideload-image', array( $this, 'handle_ajax_image_sideload' ) );
+				}
+			}
 		}
 	}
 
