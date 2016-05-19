@@ -292,15 +292,15 @@ class Admin {
 
 		// Set some default items
 		$api_status_text = __( 'API NOT Authenticated', 'webdam' );
-		$api_status_class = 'not-authenticated';
+		$api_status_class = 'api-not-authenticated';
 
 		// Fetch our existing settings
 		$settings = get_option( 'webdam_settings' );
 
-		// Determine if we're authenticated or not
-		if ( \webdam_is_authenticated() ) {
+		// Determine if the api is authenticated or not
+		if ( \webdam_api_is_authenticated() ) {
 			$api_status_text = __( 'API Authenticated', 'webdam' );
-			$api_status_class = 'authenticated';
+			$api_status_class = 'api-authenticated';
 		} ?>
 		
 		<div class="webdam-settings wrap <?php echo esc_attr( $api_status_class ); ?>">
@@ -314,93 +314,153 @@ class Admin {
 					<tbody>
 						<tr>
 							<th scope="row">
-								<label for="webdam_account_domain"><?php esc_html_e( 'Domain', 'webdam' ); ?></label>
+								<label for="webdam_account_domain"><?php esc_html_e( 'Your WebDAM Domain', 'webdam' ); ?></label>
 							</th>
 							<td>
 								<input
 									type="text"
 									id="webdam_account_domain"
 									name="webdam_settings[webdam_account_domain]"
+									size="35"
 									value="<?php echo ! empty( $settings['webdam_account_domain'] ) ? esc_attr( $settings['webdam_account_domain'] ) : ''; ?>"
 									placeholder="yourdomain.webdamdb.com">
+								<p class="description">Example: acme.webdamdb.com</p>
 							</td>
-						</tr><tr id="api-status-row">
+						</tr><tr id="enable-api-row">
 							<th scope="row">
-								<label for="webdam_enable_api"><?php esc_html_e( 'API Status', 'webdam' ); ?></label>
-							</th><td>
-								<p class="api-authentication-status">
-									<span class="<?php echo esc_attr( $api_status_class ); ?>">
-										<?php echo esc_html( $api_status_text ); ?>
-									</span>
-								</p><?php
-
-								// Display link to authenticate if needed
-								if ( \webdam_is_authenticated() ) {
-
-									// API is authentication—good to go
-
-								} else {
-									// Once we have client_id/secret show the api auth_code link
-									if ( empty( $settings['api_client_secret'] ) || empty( $settings['api_client_id'] ) ) {
-
-										printf(
-											'<p>%s<p><p><a target="_blank" href="%s" title="%s">%s</a></p>',
-											esc_html__( 'Enter your WebDAM Client ID and Secret Keys below.', 'webdam' ),
-											esc_url( 'http://webdam.com/DAM-software/API/' ),
-											esc_attr__( 'Obtain your API keys', 'webdam' ),
-											esc_html__( 'Click here to obtain your keys.', 'webdam' )
-										);
-									} else {
-										// Display the authorization link
-										// this link takes user to webdam to login and authorize our API
-										printf(
-											'<p><a href="%s" title="%s" class="%s">%s</a></p>',
-											esc_url( \webdam_get_authorization_url() ),
-											esc_attr__( 'Authorize WebDAM', 'webdam' ),
-											esc_attr( 'authorization-url' ),
-											esc_html__( 'Click here to authorize API access to your WebDAM account.', 'webdam' )
-										);
-										// Display a notice for the user to enter their api keys
-									}
-								} ?>
-							</td>
-						</tr><tr id="api-client-id-row">
-							<th scope="row"><?php esc_html_e( 'API Client ID', 'webdam' ); ?></th>
-							<td>
-								<input
-									type="text"
-									id="api_client_id"
-									name="webdam_settings[api_client_id]"
-									value="<?php echo ! empty( $settings['api_client_id'] ) ? esc_attr( $settings['api_client_id'] ) : ''; ?>">
-							</td>
-						</tr><tr id="api-client-secret-row">
-							<th scope="row"><?php esc_html_e( 'API Client Secret', 'webdam' ); ?></th>
-							<td>
-								<input
-									type="text"
-									id="api_client_secret"
-									name="webdam_settings[api_client_secret]"
-									value="<?php echo ! empty( $settings['api_client_secret'] ) ? esc_attr( $settings['api_client_secret'] ) : ''; ?>">
-							</td>
-						</tr><tr id="enable-sideloading-row">
-							<th scope="row"><?php esc_html_e( 'Save chosen assets in the Media Library', 'webdam' ); ?></th>
+								<?php esc_html_e( 'Enable WebDAM API', 'webdam' ); ?>
+							</th>
 							<td>
 								<input
 									type="checkbox"
-									id="enable-sideloading"
-									name="webdam_settings[enable_sideloading]"
+									id="enable-api"
+									name="webdam_settings[enable_api]"
 									value="1"
-									<?php isset( $settings['enable_sideloading'] ) ? checked( $settings['enable_sideloading'], 1 ) : ''; ?>>
+									<?php ! empty( $settings['enable_api'] ) ? checked( $settings['enable_api'], 1 ) : ''; ?>>
+
+								<p class="description">The WebDAM API provides additional optional features. <a href="https://github.com/shutterstock/Webdam-Wordpress-Asset-Chooser" target="_blank"><?php esc_html_e( 'Learn more', 'webdam' ); ?></a></p>
 							</td>
 						</tr>
-					</tbody>
-				</table><?php
 
-				submit_button(); ?>
+						<?php if ( ! empty( $settings['enable_api'] ) ) : ?>
+
+							<tr id="api-status-row">
+								<th scope="row">
+									<label><?php esc_html_e( 'WebDAM API Status', 'webdam' ); ?></label>
+								</th><td>
+									<p class="api-authentication-status">
+										<span class="<?php echo esc_attr( $api_status_class ); ?>">
+											<?php echo esc_html( $api_status_text ); ?>
+										</span>
+									</p><?php
+
+									// Display some user instruction if the API is not authenticated
+									if ( ! \webdam_api_is_authenticated() ) {
+
+										// If we're missing either of the client keys prompt
+										// the user to located and enter them.
+										if ( empty( $settings['api_client_secret'] ) || empty( $settings['api_client_id'] ) ) {
+
+											printf(
+												'<p>%s<p><p><a target="_blank" href="%s" title="%s">%s</a></p>',
+												esc_html__( 'Enter your WebDAM Client ID and Secret Keys below.', 'webdam' ),
+												esc_url( 'http://webdam.com/DAM-software/API/' ),
+												esc_attr__( 'Obtain your API keys', 'webdam' ),
+												esc_html__( 'Click here to obtain your API keys.', 'webdam' )
+											);
+
+										} else {
+
+											// API is not authenticated, BUT we have API keys
+											// The user simply needs to complete the authorization.
+											// Display the authorization link. This link takes user
+											// to webdam to login and authorize the website to access
+											// their account data through the API.
+											printf(
+												'<p><a href="%s" title="%s" class="%s">%s</a></p>',
+												esc_url( \webdam_api_get_authorization_url() ),
+												esc_attr__( 'Authorize WebDAM', 'webdam' ),
+												esc_attr( 'authorization-url' ),
+												esc_html__( 'Click here to authorize API access to your WebDAM account.', 'webdam' )
+											);
+
+										}
+									} ?>
+
+								</td>
+							</tr><tr id="api-client-id-row">
+								<th scope="row"><?php esc_html_e( 'API Client ID Key', 'webdam' ); ?></th>
+								<td>
+									<input
+										type="text"
+										id="api_client_id"
+										size="52"
+										name="webdam_settings[api_client_id]"
+										placeholder="Enter your 40 character alphanumeric Client ID Key"
+										value="<?php echo ! empty( $settings['api_client_id'] ) ? esc_attr( $settings['api_client_id'] ) : ''; ?>">
+								</td>
+							</tr><tr id="api-client-secret-row">
+								<th scope="row"><?php esc_html_e( 'API Client Secret Key', 'webdam' ); ?></th>
+								<td>
+									<input
+										type="text"
+										id="api_client_secret"
+										size="52"
+										name="webdam_settings[api_client_secret]"
+										placeholder="Enter your 40 character alphanumeric Client Secret Key"
+										value="<?php echo ! empty( $settings['api_client_secret'] ) ? esc_attr( $settings['api_client_secret'] ) : ''; ?>">
+								</td>
+							</tr>
+
+							<?php if ( \webdam_api_is_authenticated() ) : ?>
+
+								<tr id="enable-asset-chooser-api-login-row">
+									<th scope="row"><?php esc_html_e( 'Use the API to sign into the Asset Chooser', 'webdam' ); ?></th>
+									<td>
+										<input
+											type="checkbox"
+											id="enable-asset-chooser-api-login"
+											name="webdam_settings[enable_asset_chooser_api_login]"
+											value="1"
+											<?php ! empty( $settings['enable_asset_chooser_api_login'] ) ? checked( $settings['enable_asset_chooser_api_login'], 1 ) : ''; ?>>
+										<p class="description"><?php
+
+											printf(
+												'%s<br />%s',
+												esc_html__( 'When selected, the Asset Chooser window no longer prompts users to login.', 'webdam' ),
+												esc_html__( "Instead, the account authorized with the API is used to log all users in.", 'webdam' )
+											); ?></p>
+									</td>
+								</tr><tr id="enable-sideloading-row">
+									<th scope="row"><?php esc_html_e( 'Save chosen assets in the Media Library', 'webdam' ); ?></th>
+									<td>
+										<input
+											type="checkbox"
+											id="enable-sideloading"
+											name="webdam_settings[enable_sideloading]"
+											value="1"
+											<?php ! empty( $settings['enable_sideloading'] ) ? checked( $settings['enable_sideloading'], 1 ) : ''; ?>>
+										<p class="description"><?php
+
+											printf(
+												'%s<br />%s',
+												esc_html__( 'When selected, Chosen Assets are downloaded into your WordPress Media Library.', 'webdam' ),
+												esc_html__( "Those chosen assets are then served from your website not WebDAM's.", 'webdam' )
+											); ?></p>
+									</td>
+								</tr>
+
+							<?php endif; // if webdam api is authenticated ?>
+
+						<?php endif; // if webdam api is enabled ?>
+
+					</tbody>
+				</table>
+
+				<?php submit_button(); ?>
 
 			</form>
 		</div><?php
-
 	}
 
 	/**
@@ -425,6 +485,10 @@ class Admin {
 
 		// Save the client id
 		if( isset( $input['api_client_id'] ) ) {
+		// Save the API preference
+		if( ! empty( $input['enable_api'] ) ) {
+			$new_settings['enable_api'] = intval( $input['enable_api'] );
+		}
 			$new_settings['api_client_id'] = sanitize_text_field( $input['api_client_id'] );
 		}
 
@@ -435,6 +499,10 @@ class Admin {
 
 		// Save the sideloading preference
 		if( isset( $input['enable_sideloading'] ) ) {
+		// Save the Asset Chooser API signin preference
+		if( ! empty( $input['enable_asset_chooser_api_login'] ) ) {
+			$new_settings['enable_asset_chooser_api_login'] = intval( $input['enable_asset_chooser_api_login'] );
+		}
 			$new_settings['enable_sideloading'] = intval( $input['enable_sideloading'] );
 		}
 

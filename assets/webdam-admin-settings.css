@@ -1,24 +1,21 @@
 div.webdam-settings {
 
 }
-	div.webdam-settings.authenticated {
-
+	table#api-enabled {
+		margin-top: 0;
 	}
-	div.webdam-settings.not-authenticated {
-
-	}
-	p.api-authentication-status {
-		margin-bottom: 10px;
-	}
-		p.api-authentication-status span {
-			border-radius: 4px;
-			color: white;
-			padding: 5px;
-			display: inline-block;
+		p.api-authentication-status {
+			margin-bottom: 10px;
 		}
-			div.webdam-settings.authenticated p.api-authentication-status span {
-				background-color: #00A651;
+			p.api-authentication-status span {
+				border-radius: 4px;
+				color: white;
+				padding: 5px;
+				display: inline-block;
 			}
-			div.webdam-settings.not-authenticated p.api-authentication-status span {
-				background-color: #942a25;
-			}
+				div.webdam-settings.api-authenticated p.api-authentication-status span {
+					background-color: #00A651;
+				}
+				div.webdam-settings.api-not-authenticated p.api-authentication-status span {
+					background-color: #942a25;
+				}
