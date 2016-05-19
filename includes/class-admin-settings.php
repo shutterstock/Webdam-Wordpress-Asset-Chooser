@@ -483,30 +483,32 @@ class Admin {
 		$response_message = '';
 
 		// Save the domain
-		if( isset( $input['webdam_account_domain'] ) ) {
+		if( ! empty( $input['webdam_account_domain'] ) ) {
 			$new_settings['webdam_account_domain'] = sanitize_text_field( $input['webdam_account_domain'] );
 		}
 
-		// Save the client id
-		if( isset( $input['api_client_id'] ) ) {
 		// Save the API preference
 		if( ! empty( $input['enable_api'] ) ) {
 			$new_settings['enable_api'] = intval( $input['enable_api'] );
 		}
+
+		// Save the API client id
+		if( ! empty( $input['api_client_id'] ) ) {
 			$new_settings['api_client_id'] = sanitize_text_field( $input['api_client_id'] );
 		}
 
-		// Save the client secret
-		if( isset( $input['api_client_secret'] ) ) {
+		// Save the API client secret
+		if( ! empty( $input['api_client_secret'] ) ) {
 			$new_settings['api_client_secret'] = sanitize_text_field( $input['api_client_secret'] );
 		}
 
-		// Save the sideloading preference
-		if( isset( $input['enable_sideloading'] ) ) {
 		// Save the Asset Chooser API signin preference
 		if( ! empty( $input['enable_asset_chooser_api_login'] ) ) {
 			$new_settings['enable_asset_chooser_api_login'] = intval( $input['enable_asset_chooser_api_login'] );
 		}
+
+		// Save the API sideloading preference
+		if( ! empty( $input['enable_sideloading'] ) ) {
 			$new_settings['enable_sideloading'] = intval( $input['enable_sideloading'] );
 		}
 

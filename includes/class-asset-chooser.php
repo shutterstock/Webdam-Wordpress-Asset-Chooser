@@ -89,11 +89,11 @@ class Asset_Chooser {
 	 */
 	function allowed_http_origins( $allowed_origins ) {
 
-		$settings = webdam_get_settings();
+		$settings = \webdam_get_settings();
 
 		if ( ! empty( $settings['webdam_account_domain'] ) ) {
 
-			$allowed_origins[] = webdam_get_site_protocol() . $settings['webdam_account_domain'];
+			$allowed_origins[] = \webdam_get_site_protocol() . $settings['webdam_account_domain'];
 
 		}
 
@@ -122,14 +122,14 @@ class Asset_Chooser {
 	 *
 	 * @return null
 	 */
-	function ajax_get_mock_api_response() {
+	public function ajax_get_mock_api_response() {
 
 		$mock_api_response = array(
-			'access_token'  => webdam_get_current_access_token(),
+			'access_token'  => \webdam_api_get_current_access_token(),
 			'expires_in'    => 3600,
 			'token_type'    => 'bearer',
 			'scope'         => null,
-			'refresh_token' => webdam_get_current_refresh_token()
+			'refresh_token' => \webdam_api_get_current_refresh_token()
 		);
 
 		wp_send_json( $mock_api_response );
@@ -157,7 +157,7 @@ class Asset_Chooser {
 
 		$localized_variables = array();
 
-		if ( $settings = webdam_get_settings() ) {
+		if ( $settings = \webdam_get_settings() ) {
 
 			// Build the client webdam url
 			$domain_path = '';
@@ -167,7 +167,7 @@ class Asset_Chooser {
 				$domain_path = $settings['webdam_account_domain'];
 
 				if ( false === strpos( $domain_path, '://' ) ) {
-					$domain_path = webdam_get_site_protocol() . $domain_path;
+					$domain_path = \webdam_get_site_protocol() . $domain_path;
 				}
 			}
 
@@ -265,7 +265,7 @@ class Asset_Chooser {
 	 */
 	public function action_admin_print_scripts() {
 
-		$settings = webdam_get_settings();
+		$settings = \webdam_get_settings();
 
 		$screen = get_current_screen();
 
@@ -283,7 +283,7 @@ class Asset_Chooser {
 			<div class="done"></div>
 		</div>
 
-		<?php if ( ! empty( $settings['enable_sideloading'] ) ) : ?>
+		<?php if ( \webdam_api_sideloading_is_enabled() ) : ?>
 
 		<!--
 			The inserted [caption] and <img> inserted into content.
@@ -342,7 +342,7 @@ class Asset_Chooser {
 		}
 
 		// Verify our nonce to ensure safe origin
-		check_ajax_referer( 'webdam_sideload_image', 'nonce' );
+		check_ajax_referer( 'webdam_sideload_asset', 'nonce' );
 
 		// Verify we've got the data we need to proceed
 		if ( empty( $_POST['post_id'] ) ) {
@@ -387,7 +387,7 @@ class Asset_Chooser {
 		// and often not present. We could create code to check existing data,
 		// and fetch what's needed, but the likelihood of images with data
 		// is slim, and depends on the photographer.
-		$webdam_image_meta = \webdam_get_asset_metadata( $webdam_asset_id );
+		$webdam_image_meta = \webdam_api_get_asset_metadata( $webdam_asset_id );
 
 		// Allow the raw sideloaded asset meta to be filtered
 		$webdam_image_meta = apply_filters( 'webdam-sideload-asset-meta', $webdam_image_meta );
