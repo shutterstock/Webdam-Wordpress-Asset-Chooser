@@ -20,18 +20,32 @@
 					action: 'getAssetId',
 					showEmbedLink: 'true',
 					showAddLink: 'false',
+					sessionMode: 'session',
 					allowMultipleSelect: 'true'
 				} ];
 
+				// Build the WebDAM Asset Chooser iFrame URL
+				var webdam_asset_chooser_url  = webdam.asset_chooser_domain;
+					webdam_asset_chooser_url += '/assetpicker/assetpicker.plugin.php';
+					webdam_asset_chooser_url += '?returnUrl=' + encodeURIComponent(webdam.return_url);
+
+				// If API login has been enabled, use the oauth session mode
+				// and provide a URL which WebDAM can GET our current access
+				// and refresh tokens via JSON.
+				// @todo WebDAM serverside needs to allow us to simply send an access token
+				if ( webdam.api_login_enabled ) {
+					params[0].sessionMode = 'oauth';
+					webdam_asset_chooser_url += '&tokenpath=' + encodeURIComponent(webdam.get_current_api_response_url);
+				}
+
+				webdam_asset_chooser_url += '&params=' + encodeURIComponent(JSON.stringify(params));
+
 				var windowReference = ed.windowManager.open({
 					title: 'WebDAM Asset Chooser',
-					url: webdam.asset_chooser_domain + '/assetpicker/assetpicker.plugin.php?returnUrl=' + encodeURIComponent(webdam.return_url) + '&tokenpath=' + encodeURIComponent(webdam.get_current_api_response_url) + '&params=' + encodeURIComponent(JSON.stringify(params)),
-
+					url: webdam_asset_chooser_url,
 					width: 940,
 					height: 600,
-					onclose: function() {
-
-					}
+					onclose: function() {}
 				});
 
 				// also initiate the method that checks cookie and inserts the image when set
