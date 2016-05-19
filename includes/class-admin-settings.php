@@ -56,11 +56,8 @@ class Admin {
 			$this->admin_set_cookie_page_url = $admin_set_cookie_page_url;
 		}
 
-
 		// Display a notice when WebDAM settings are needed
-		if ( ! \webdam_get_settings() ) {
-			add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
-		}
+		add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
 
 		// Create the Settings > Webdam page
 		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
@@ -79,27 +76,34 @@ class Admin {
 	 * @return null
 	 */
 	public function show_admin_notice() {
-		/*
-		 * We want to show notice only to those users who can update options,
-		 * for everyone else the notice won't mean much if anything.
-		 */
+
+		// Only show notice only to those users who can update options
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
-		} ?>
+		}
+
+		// If we're completely missing settings OR
+		// the API is enabled but not authenticated,
+		// display an error for the user to update settings.
+		if ( ! \webdam_get_settings() || ( \webdam_api_is_enabled() && ! \webdam_api_is_authenticated() ) ) : ?>
 
 		<div class="error">
 			<p>
 				<strong><?php
 
 					printf(
-						wp_kses( __( 'Please update the <a href="%s">%s</a> with your information.', 'webdam' ) ),
-						esc_url( $this->settings_admin_page_url ),
-						esc_html_e( 'WebDAM Settings', 'webdam' )
+						wp_kses( __( '<a href="%s">%s</a> require your attention.', 'webdam' ) ),
+						esc_url( $this->admin_settings_page_url ),
+						esc_html__( 'WebDAM Settings', 'webdam' )
 					); ?>
 
 				</strong>
 			</p>
-		</div><?php
+		</div>
+
+		<?php endif; ?>
+
+		<?php
 	}
 
 	/**
@@ -511,11 +515,6 @@ class Admin {
 			$response_message = __( 'No changes made.', 'webdam' );
 		} else {
 			$response_message = __( 'Settings saved.', 'webdam' );
-
-			if ( ! empty( $old_settings ) ) {
-				$response_type = 'error';
-				$response_message = __( 'Looks like you\'ve changed your WebDAM settings. Please authorize the API again.', 'webdam' );
-			}
 		}
 
 		// Display a message to the user
