@@ -65,7 +65,7 @@ class Admin {
 		// Create the Settings > Webdam page
 		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
-		add_action( 'update_option_webdam_settings', array( $this, 'update_option_webdam_settings' ) );
+		add_action( 'update_option_webdam_settings', array( $this, 'update_option_webdam_settings' ), 10, 3 );
 
 		// Enqueue styles and scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
