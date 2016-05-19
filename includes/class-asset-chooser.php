@@ -167,25 +167,36 @@ class Asset_Chooser {
 
 				// The return url is a hidden options page created in
 				// \Webdam\Admin::create_set_cookie_page()
-				'return_url' => esc_url_raw( webdam_get_admin_set_cookie_page_url() ),
-
-				// The response URL is used by WebDAM to back-ping us
-				// for the API token to authenticate the asset chooser iFrame
-				// Unfortunetly this information can't be passed in the iFrame URL
-				'get_current_api_response_url' => esc_url_raw( add_query_arg(
-					'action',
-					'webdam_get_mock_api_response',
-					admin_url( 'admin-ajax.php' )
-				) ),
+				'return_url' => esc_url_raw( \webdam_get_admin_set_cookie_page_url() ),
 			);
 
-			// If sideloading is enabled note that in the localized
-			// data and include a nonce for that sideloading functionality
-			if ( ! empty( $settings['enable_sideloading'] ) ) {
+			// If the WebDAM Note that the API is enable in the localized data
+			if ( \webdam_api_is_enabled() && \webdam_api_is_authenticated() ) {
 
-				$localized_variables['enable_sideloading'] = 1;
-				$localized_variables['sideload_nonce'] = wp_create_nonce( 'webdam_sideload_image' );
+				// If Asset Chooser API login is enabled let JavaScript know
+				// so that it processes the Asset Chooser iFrame login via oauth
+				if ( \webdam_asset_chooser_api_login_is_enabled() ) {
 
+					$localized_variables['api_login_enabled'] = 1;
+
+					// The response URL is used by WebDAM to back-ping us
+					// for the API token to authenticate the asset chooser iFrame
+					// Unfortunetly this information can't be passed in the iFrame URL
+					$localized_variables['get_current_api_response_url'] = esc_url_raw(
+						add_query_arg(
+							'action',
+							'webdam_get_mock_api_response',
+							admin_url( 'admin-ajax.php' )
+						)
+					);
+				}
+
+				// If sideloading is enabled note that in the localized
+				// data and include a nonce for that sideloading functionality
+				if ( \webdam_api_sideloading_is_enabled() ) {
+					$localized_variables['enable_sideloading'] = 1;
+					$localized_variables['sideload_nonce'] = wp_create_nonce( 'webdam_sideload_asset' );
+				}
 			}
 		}
 
