@@ -560,9 +560,45 @@ class Admin {
 	 */
 	public function update_option_webdam_settings( $old_value, $new_value, $option ) {
 
-		// If new settings are being saved broadcast that changes are being saved
+		// If the settings have been adjusted..
 		if ( $new_value !== $old_value ) {
-			do_action( 'webdam-saved-new-settings' );
+
+			// Has the API been disabled?
+			if ( empty( $new_value['enable_api'] ) ) {
+
+				// If the API has been disabled remove it's cache
+				delete_transient( 'Webdam\API' );
+
+			} else {
+
+				// Nope, API is still enabled..
+
+				// If the id or secret keys are missing
+				// OR
+				// if the id or secret keys have changed..
+				if (
+					(
+						empty( $new_value['api_client_id'] ) || empty( $new_value['api_client_secret'] )
+					)
+					||
+					(
+						$old_value['api_client_id'] !== $new_value['api_client_id'] ||
+						$old_value['api_client_secret'] !== $new_value['api_client_secret']
+					)
+				) {
+
+					// Delete an existing API cache if we're missing settings
+					delete_transient( 'Webdam\API' );
+
+					// Broadcast that changes are being saved.
+					// The API listens for this event, and updates
+					// it's cache to contain the newly saved keys.
+					// During this process the API will become
+					// de-authenticated and the user is prompted
+					// to re-authorize the API usage with their account.
+					do_action( 'webdam-saved-new-settings' );
+				}
+			}
 		}
 	}
 }
