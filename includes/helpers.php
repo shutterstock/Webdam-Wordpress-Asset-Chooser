@@ -58,9 +58,9 @@ function webdam_get_settings() {
 
 	if ( null !== $settings ) {
 		return $settings;
-	} else {
-		return false;
 	}
+
+	return false;
 }
 
 /**
@@ -68,21 +68,76 @@ function webdam_get_settings() {
  */
 
 /**
- * Fetch asset metadata from WebDAM
+ * Determine if the WebDAM API integration is enabled
  *
- * @param array $asset_ids An array of assets to fetch meta for.
- *                         e.g. array( XXXXXXX, XXXXXX, ... )
+ * @param null
  *
- * @return array|bool Array of metadata on success, false on failure
+ * @return bool True when the API is enabled. False otherwise.
  */
-function webdam_get_asset_metadata( $asset_ids = array() ) {
+function webdam_api_is_enabled() {
 
-	$asset_ids = (array) $asset_ids;
+	$settings = webdam_get_settings();
 
-	$asset_meta = Webdam\API::get_instance()->get_asset_metadata( $asset_ids );
+	if ( ! empty( $settings['enable_api'] ) ) {
+		return true;
+	}
 
-	if ( $asset_meta ) {
-		return $asset_meta;
+	return false;
+}
+
+/**
+ * Is the WebDAM API authenticated?
+ *
+ * @param null
+ *
+ * @return bool True if the API is authenticated, false if it is not.
+ */
+function webdam_api_is_authenticated() {
+
+	if ( class_exists( 'Webdam\API' ) ) {
+
+		$api = Webdam\API::get_instance();
+
+		if ( $api->is_authenticated() ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Determine if the Asset Chooser API login setting is enabled
+ *
+ * @param null
+ *
+ * @return bool True when the API login is enabled. False otherwise.
+ */
+function webdam_asset_chooser_api_login_is_enabled() {
+
+	$settings = webdam_get_settings();
+
+	if ( ! empty( $settings['enable_asset_chooser_api_login'] ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+
+/**
+ * Determine if the WebDAM API sideloading is enabled
+ *
+ * @param null
+ *
+ * @return bool True when sideloading is enabled. False otherwise.
+ */
+function webdam_api_sideloading_is_enabled() {
+
+	$settings = webdam_get_settings();
+
+	if ( ! empty( $settings['enable_sideloading'] ) ) {
+		return true;
 	}
 
 	return false;
@@ -93,28 +148,15 @@ function webdam_get_asset_metadata( $asset_ids = array() ) {
  *
  * @param null
  *
- * @return string The authorization URL
+ * @return string|bool The authorization URL. False on failure.
  */
-function webdam_get_authorization_url() {
+function webdam_api_get_authorization_url() {
 
-	$api = Webdam\API::get_instance();
+	if ( class_exists( 'Webdam\API' ) ) {
 
-	return $api->get_authorization_url();
-}
+		$api = Webdam\API::get_instance();
 
-/**
- * Is the WebDAM API authenticated?
- *
- * @param null
- *
- * @return bool True if the API is authenticated, false if it is not.
- */
-function webdam_is_authenticated() {
-
-	$api = Webdam\API::get_instance();
-
-	if ( $api->is_authenticated() ) {
-		return true;
+		return $api->get_authorization_url();
 	}
 
 	return false;
@@ -125,13 +167,18 @@ function webdam_is_authenticated() {
  *
  * @param null
  *
- * @return string The access token
+ * @return string|bool The access token. False on failure.
  */
-function webdam_get_current_access_token() {
+function webdam_api_get_current_access_token() {
 
-	$api = Webdam\API::get_instance();
+	if ( class_exists( 'Webdam\API' ) ) {
 
-	return $api->get_current_access_token();
+		$api = Webdam\API::get_instance();
+
+		return $api->get_current_access_token();
+	}
+
+	return false;
 }
 
 /**
@@ -139,14 +186,42 @@ function webdam_get_current_access_token() {
  *
  * @param null
  *
- * @return string The refresh token
+ * @return string|bool The refresh token. False on failure.
  */
-function webdam_get_current_refresh_token() {
+function webdam_api_get_current_refresh_token() {
 
-	$api = Webdam\API::get_instance();
+	if ( class_exists( 'Webdam\API' ) ) {
 
-	return $api->get_current_refresh_token();
+		$api = Webdam\API::get_instance();
+
+		return $api->get_current_refresh_token();
+	}
+
+	return false;
 }
 
+/**
+ * Fetch asset metadata from WebDAM
+ *
+ * @param array $asset_ids An array of assets to fetch meta for.
+ *                         e.g. array( XXXXXXX, XXXXXX, ... )
+ *
+ * @return array|bool Array of metadata on success. False on failure.
+ */
+function webdam_api_get_asset_metadata( $asset_ids = array() ) {
+
+	if ( class_exists( 'Webdam\API' ) ) {
+
+		$asset_ids = (array) $asset_ids;
+
+		$asset_meta = Webdam\API::get_instance()->get_asset_metadata( $asset_ids );
+
+		if ( $asset_meta ) {
+			return $asset_meta;
+		}
+	}
+
+	return false;
+}
 
 // EOF
