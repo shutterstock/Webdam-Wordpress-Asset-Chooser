@@ -269,8 +269,10 @@ class Admin {
 		 * Because this restriction has to do with using a specific admin page,
 		 * it makes sense to use the named const approach rather than the nonce method.
 		 */
-		if ( 'webdam-set-cookie' === $_GET['page'] ) {
-			define( 'IFRAME_REQUEST', true );
+		if ( ! empty( $_GET['page'] ) ) {
+			if ( 'webdam-set-cookie' === $_GET['page'] ) {
+				define( 'IFRAME_REQUEST', true );
+			}
 		}
 
 		/**
