@@ -441,15 +441,15 @@ class API {
 		// Broadcast the raw post response
 		do_action( 'webdam-post-response', $response );
 
-		$response['body'] = json_decode( $response['body'] );
-
 		// Handle the response and return
 		if ( ! is_wp_error( $response ) && 200 === $response['response']['code'] ) {
+
+			$response['body'] = json_decode( $response['body'] );
 
 			return array( 'success' => true, 'data' => $response['body'] ) ;
 
 		} else {
-			return array( 'success' => false, 'msg' => $response['body']->error_description ) ;
+			return array( 'success' => false, 'msg' => $response->get_error_message() ) ;
 		}
 	}
 
