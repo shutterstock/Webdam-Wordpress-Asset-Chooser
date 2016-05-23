@@ -28,9 +28,13 @@ function webdam_get_site_protocol() {
  */
 function webdam_get_admin_settings_page_url() {
 
-	$settings = \Webdam\Admin::get_instance();
+	if ( class_exists( 'Webdam\Admin' ) ) {
+		$settings = Webdam\Admin::get_instance();
 
-	return $settings->get_admin_settings_page_url();
+		return $settings->get_admin_settings_page_url();
+	}
+
+	return false;
 }
 
 /**
@@ -40,9 +44,13 @@ function webdam_get_admin_settings_page_url() {
  */
 function webdam_get_admin_set_cookie_page_url() {
 
-	$settings = \Webdam\Admin::get_instance();
+	if ( class_exists( 'Webdam\Admin' ) ) {
+		$settings = Webdam\Admin::get_instance();
 
-	return $settings->get_admin_set_cookie_page_url();
+		return $settings->get_admin_set_cookie_page_url();
+	}
+
+	return false;
 }
 
 /**
