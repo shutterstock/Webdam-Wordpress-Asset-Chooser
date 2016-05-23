@@ -92,7 +92,7 @@ class Admin {
 				<strong><?php
 
 					printf(
-						wp_kses( __( '<a href="%s">%s</a> require your attention.', 'webdam' ) ),
+						wp_kses_post( __( '<a href="%s">%s</a> require your attention.', 'webdam' ) ),
 						esc_url( $this->admin_settings_page_url ),
 						esc_html__( 'WebDAM Settings', 'webdam' )
 					); ?>
