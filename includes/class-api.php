@@ -102,7 +102,7 @@ class API {
 			//
 			// Create an internal reference to the settings page URL
 			// aka known as the authentication redirect URL.
-			$this->authorization_redirect_uri = webdam_get_admin_settings_page_url();
+			$this->authorization_redirect_uri = \webdam_get_admin_settings_page_url();
 
 			// Only proceed if we have credentials to send
 			if ( ! empty( $settings['api_client_id'] ) && ! empty( $settings['api_client_secret'] ) ) {
