@@ -59,8 +59,9 @@ class Admin {
 		// Display a notice when WebDAM settings are needed
 		add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
 
-		// Create the Settings > Webdam page
+		// Create the Settings > Webdam pages
 		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
+		add_action( 'admin_head', array( $this, 'action_admin_head' ) );
 		add_action( 'admin_init', array( $this, 'create_settings_page_elements' ) );
 		add_action( 'update_option_webdam_settings', array( $this, 'update_option_webdam_settings' ), 10, 3 );
 
@@ -139,7 +140,7 @@ class Admin {
 		add_options_page(
 			'WebDAM Set Cookie',
 			'WebDAM Set Cookie',
-			'manage_options',
+			'edit_posts',
 			'webdam-set-cookie',
 			array( $this, 'create_set_cookie_page' )
 		);
@@ -152,8 +153,16 @@ class Admin {
 
 		// Cache the settings page cookie url so it's available before these hooks execute
 		set_transient( 'WebDAM\Admin\set_cookie_page_url', $this->admin_set_cookie_page_url );
+	}
+
+	/**
+	 * WP Core admin_head Action
+	 */
+	public function action_admin_head() {
 
 		// Hide the admin set cookie page
+		// This page is used to set the chosen asset cookie
+		// it needs to be accessible, but hidden from the admin menu
 		remove_submenu_page( 'options-general.php', 'webdam-set-cookie' );
 	}
 
@@ -218,13 +227,19 @@ class Admin {
 	 * Render the hidden admin set cookie page
 	 *
 	 * This page is used to set the chosen asset cookie
-	 * it needs to be accessible, but hidden from the admin menu
+	 * it needs to be accessible, but hidden from the admin menu.
+	 *
+	 * The only thing on this page is an equeued script (see wp_enqueue_scripts() above)
 	 *
 	 * @param null
 	 *
 	 * @return null
 	 */
-	public function create_set_cookie_page() { ?>
+	public function create_set_cookie_page() {
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.', 'webdam' ) );
+		} ?>
 
 		<p>
 			<?php esc_html_e( 'This page is used to set the WebDAM chosen asset cookie.', 'webdam' ); ?>
