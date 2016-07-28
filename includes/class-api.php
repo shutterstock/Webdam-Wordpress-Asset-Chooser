@@ -449,7 +449,7 @@ class API {
 			return array( 'success' => true, 'data' => $response['body'] ) ;
 
 		} else {
-			return array( 'success' => false, 'msg' => $response->get_error_message() ) ;
+			return array( 'success' => false, 'msg' => $response['body'] ) ;
 		}
 	}
 
