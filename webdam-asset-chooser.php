@@ -1,10 +1,10 @@
 <?php
 /**
- Plugin Name: WebDAM Asset Chooser
+ Plugin Name: Webdam Asset Chooser
  Plugin URI: http://webdam.com/
- Description: Import WebDAM assets into WordPress.
+ Description: Import Webdam assets into WordPress.
  Version: 1.2.1
- Author: WebDAM, PMC, Amit Gupta, James Mehorter
+ Author: Webdam, PMC, Amit Gupta, James Mehorter
  Author URI: http://webdam.com/
 */
 
@@ -22,7 +22,7 @@ require_once __DIR__ . '/includes/helpers.php';
 $settings = get_option( 'webdam_settings' );
 
 // Only load up the API class if API usage
-// has been enabled in Settings > WebDAM
+// has been enabled in Settings > Webdam
 if ( ! empty( $settings['enable_api'] ) ) {
 	require_once __DIR__ . '/includes/class-api.php';
 }

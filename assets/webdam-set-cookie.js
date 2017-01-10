@@ -25,5 +25,5 @@ function getParameterByName(name) {
 	return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-// Set the WebDAM Cookie
+// Set the Webdam Cookie
 webdam_set_cookie('widgetEmbedValue', getParameterByName('widgetEmbedValue'), 1);

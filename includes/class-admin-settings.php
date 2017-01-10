@@ -45,8 +45,8 @@ class Admin {
 
 		// Fetch our cached page urls so they're available in this class
 		// before the admin_menu hook fires
-		$admin_settings_page_url = get_transient( 'WebDAM\Admin\settings_page_url' );
-		$admin_set_cookie_page_url = get_transient( 'WebDAM\Admin\set_cookie_page_url' );
+		$admin_settings_page_url = get_transient( 'Webdam\Admin\settings_page_url' );
+		$admin_set_cookie_page_url = get_transient( 'Webdam\Admin\set_cookie_page_url' );
 
 		if ( ! empty( $admin_settings_page_url ) ) {
 			$this->admin_settings_page_url = $admin_settings_page_url;
@@ -95,7 +95,7 @@ class Admin {
 					printf(
 						wp_kses_post( __( '<a href="%s">%s</a> require your attention.', 'webdam' ) ),
 						esc_url( $this->admin_settings_page_url ),
-						esc_html__( 'WebDAM Settings', 'webdam' )
+						esc_html__( 'Webdam Settings', 'webdam' )
 					); ?>
 
 				</strong>
@@ -118,8 +118,8 @@ class Admin {
 
 		// Create the 'WebDAM' Settings page
 		add_options_page(
-			'WebDAM Settings',
-			'WebDAM',
+			'Webdam Settings',
+			'Webdam',
 			'manage_options',
 			'webdam-settings',
 			array( $this, 'create_settings_page' )
@@ -132,14 +132,14 @@ class Admin {
 		);
 
 		// Cache the settings page url so it's available before these hooks execute
-		set_transient( 'WebDAM\Admin\settings_page_url', $this->admin_settings_page_url );
+		set_transient( 'Webdam\Admin\settings_page_url', $this->admin_settings_page_url );
 
 		// Create the soon-to-be hidden admin set cookie page
 		// This page is used to set the chosen asset cookie
 		// it needs to be accessible, but hidden from the admin menu
 		add_options_page(
-			'WebDAM Set Cookie',
-			'WebDAM Set Cookie',
+			'Webdam Set Cookie',
+			'Webdam Set Cookie',
 			'edit_posts',
 			'webdam-set-cookie',
 			array( $this, 'create_set_cookie_page' )
@@ -152,7 +152,7 @@ class Admin {
 		);
 
 		// Cache the settings page cookie url so it's available before these hooks execute
-		set_transient( 'WebDAM\Admin\set_cookie_page_url', $this->admin_set_cookie_page_url );
+		set_transient( 'Webdam\Admin\set_cookie_page_url', $this->admin_set_cookie_page_url );
 	}
 
 	/**
@@ -242,7 +242,7 @@ class Admin {
 		} ?>
 
 		<p>
-			<?php esc_html_e( 'This page is used to set the WebDAM chosen asset cookie.', 'webdam' ); ?>
+			<?php esc_html_e( 'This page is used to set the Webdam chosen asset cookie.', 'webdam' ); ?>
 			<br />
 			<?php esc_html_e( 'It needs to be accessible, but is purposefully hidden from the admin menu.', 'webdam' ); ?>
 		</p>
@@ -325,7 +325,7 @@ class Admin {
 		} ?>
 		
 		<div class="webdam-settings wrap <?php echo esc_attr( $api_status_class ); ?>">
-			<h2><?php echo esc_html_e( 'WebDAM Settings', 'webdam' ); ?></h2>
+			<h2><?php echo esc_html_e( 'Webdam Settings', 'webdam' ); ?></h2>
 			<form method="post" action="options.php"><?php
 
 				// This prints out all hidden setting fields
@@ -335,7 +335,7 @@ class Admin {
 					<tbody>
 						<tr>
 							<th scope="row">
-								<label for="webdam_account_domain"><?php esc_html_e( 'Your WebDAM Domain', 'webdam' ); ?></label>
+								<label for="webdam_account_domain"><?php esc_html_e( 'Your Webdam Domain', 'webdam' ); ?></label>
 							</th>
 							<td>
 								<input
@@ -349,7 +349,7 @@ class Admin {
 							</td>
 						</tr><tr id="enable-api-row">
 							<th scope="row">
-								<?php esc_html_e( 'Enable WebDAM API', 'webdam' ); ?>
+								<?php esc_html_e( 'Enable Webdam API', 'webdam' ); ?>
 							</th>
 							<td>
 								<input
@@ -359,7 +359,7 @@ class Admin {
 									value="1"
 									<?php ! empty( $settings['enable_api'] ) ? checked( $settings['enable_api'], 1 ) : ''; ?>>
 
-								<p class="description">The WebDAM API provides additional optional features. <a href="https://github.com/shutterstock/Webdam-Wordpress-Asset-Chooser" target="_blank"><?php esc_html_e( 'Learn more', 'webdam' ); ?></a></p>
+								<p class="description">The Webdam API provides additional optional features. <a href="https://github.com/shutterstock/Webdam-Wordpress-Asset-Chooser" target="_blank"><?php esc_html_e( 'Learn more', 'webdam' ); ?></a></p>
 							</td>
 						</tr>
 
@@ -367,7 +367,7 @@ class Admin {
 
 							<tr id="api-status-row">
 								<th scope="row">
-									<label><?php esc_html_e( 'WebDAM API Status', 'webdam' ); ?></label>
+									<label><?php esc_html_e( 'Webdam API Status', 'webdam' ); ?></label>
 								</th><td>
 									<p class="api-authentication-status">
 										<span class="<?php echo esc_attr( $api_status_class ); ?>">
@@ -384,7 +384,7 @@ class Admin {
 
 											printf(
 												'<p>%s<p><p><a target="_blank" href="%s" title="%s">%s</a></p>',
-												esc_html__( 'Enter your WebDAM Client ID and Secret Keys below.', 'webdam' ),
+												esc_html__( 'Enter your Webdam Client ID and Secret Keys below.', 'webdam' ),
 												esc_url( 'http://webdam.com/DAM-software/API/' ),
 												esc_attr__( 'Obtain your API keys', 'webdam' ),
 												esc_html__( 'Click here to obtain your API keys.', 'webdam' )
@@ -400,9 +400,9 @@ class Admin {
 											printf(
 												'<p><a href="%s" title="%s" class="%s">%s</a></p>',
 												esc_url( \webdam_api_get_authorization_url() ),
-												esc_attr__( 'Authorize WebDAM', 'webdam' ),
+												esc_attr__( 'Authorize Webdam', 'webdam' ),
 												esc_attr( 'authorization-url' ),
-												esc_html__( 'Click here to authorize API access to your WebDAM account.', 'webdam' )
+												esc_html__( 'Click here to authorize API access to your Webdam account.', 'webdam' )
 											);
 
 										}
@@ -466,7 +466,7 @@ class Admin {
 											printf(
 												'%s<br />%s',
 												esc_html__( 'When selected, Chosen Assets are downloaded into your WordPress Media Library.', 'webdam' ),
-												esc_html__( "Those chosen assets are then served from your website not WebDAM's.", 'webdam' )
+												esc_html__( "Those chosen assets are then served from your website not Webdam's.", 'webdam' )
 											); ?></p>
 									</td>
 								</tr>

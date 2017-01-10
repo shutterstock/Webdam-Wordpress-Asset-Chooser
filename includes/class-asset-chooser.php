@@ -277,7 +277,7 @@ class Asset_Chooser {
 		<!-- The 'Importing your selection' popup -->
 		<div class="webdam-asset-chooser-status">
 			<div class="working">
-				<?php esc_html_e( 'Importing your WebDAM selection..', 'PMC' ); ?>
+				<?php esc_html_e( 'Importing your Webdam selection..', 'PMC' ); ?>
 				<img src="/wp-includes/js/thickbox/loadingAnimation.gif" alt="Waiting" />
 			</div>
 			<div class="done"></div>
