@@ -55,7 +55,7 @@ class Asset_Chooser {
 			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array( $this, 'mce_add_button' ) );
 			add_filter( 'allowed_http_origins' , array( $this, 'allowed_http_origins' ) );
-			
+
 			// Log into the asset chooser if the API integration has been enabled
 			if ( \webdam_api_is_enabled() && \webdam_api_is_authenticated() ) {
 
@@ -358,7 +358,18 @@ class Asset_Chooser {
 		$webdam_asset_id  = (int) $_POST['webdam_asset_id'];
 		$webdam_asset_url = esc_url_raw( $_POST['webdam_asset_url'] );
 		$webdam_asset_filename = sanitize_file_name( $_POST['webdam_asset_filename'] );
-		
+
+		// we sometimes send a url without the host (//this/is/the/url). This will append the host and make the url valid.
+		$parsed_url = parse_url($webdam_asset_url);
+		if (isset($parsed_url['host']) && !isset($parsed_url['scheme'])) {
+			// rebuild the url
+			$query = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+			$webdam_asset_url = \webdam_get_site_protocol() .
+									$parsed_url['host'] .
+									$parsed_url['path'] .
+									$query;
+		}
+
 		// Allow the asset url to be filtered when sideloading
 		$webdam_asset_url = apply_filters( 'webdam-sideload-asset-url', $webdam_asset_url );
 
